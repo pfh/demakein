@@ -1,0 +1,4 @@
+include README
+include CHANGES
+include doc/*
+include examples/*.py

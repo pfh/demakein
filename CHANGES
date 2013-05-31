@@ -1,0 +1,26 @@
+
+0.10 - OS X support, hopefully.
+
+0.9  - Improved recorder design, and improved tuning of whistles.
+       Added "tune:" tool.
+
+0.8  - Refined three-hole pipe.
+       Added some actual documentation to README.
+
+0.7  - Added recorder and three-hole pipe.
+       Added weld and tapered joins.
+
+0.6  - Added some example scripts
+
+0.5  - Folk whistle design somewhat refined
+
+0.4  - Design tools no longer depend on cffi
+
+0.3  - Sketch uses less memory
+       Add pennywhistles
+
+0.2  - Add --embextra parameter to flutes
+       Shawms
+       Improved hole geometry
+
+0.1  - Initial release
