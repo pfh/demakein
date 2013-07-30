@@ -8,13 +8,14 @@ from .design_shawm import Design_shawm, Design_folk_shawm
 from .make_shawm import Make_shawm
 from .make_mouthpiece import Make_mouthpiece
 from .make_bauble import Make_bauble
+from .make_windcap import Make_windcap
 
 from .design_whistle import Design_folk_whistle, Design_recorder, Design_three_hole_whistle
 from .make_whistle import Make_whistle
 
 from .make_panpipe import Make_panpipe
 
-from .make_reed import Make_reed
+from .make_reed import Make_reed, Make_reed_shaper
 
 from .tune import Tune
 
@@ -44,8 +45,10 @@ def main():
             Design_folk_shawm,
             Make_shawm,
             Make_mouthpiece,
-            Make_bauble,
+            Make_windcap,
+            Make_bauble,            
             #Make_reed,
+            Make_reed_shaper,
             
             'Panpipes',        
             Make_panpipe,

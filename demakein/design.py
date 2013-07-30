@@ -332,6 +332,7 @@ def sqrt_scaler(value):
         return [ item*scale if item is not None else None for item in value ]
     return func
 
+
 @config.Int_flag('transpose', 'Transpose instrument by this many semitones.')
 class Instrument_designer(config.Action_with_output_dir):
     instrument_class = Instrument
@@ -764,6 +765,20 @@ class Instrument_designer(config.Action_with_output_dir):
         self._save(state_vec)
         
         #print(self._opt_score(state_vec))
+
+
+def bore_scaler(value):
+    @property
+    def func(self):
+        scale = math.sqrt(self.scale) * self.bore_scale
+        return [ item*scale if item is not None else None for item in value ]
+    return func
+
+@config.Float_flag('bore_scale',
+    'Bore diameter is scaled as the square root of the instrument size times this amount.'
+    )
+class Instrument_designer_with_bore_scale(Instrument_designer):
+    bore_scale = 1.0
 
 
 def load(output_dir):

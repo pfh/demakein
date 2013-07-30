@@ -57,5 +57,49 @@ class Make_reed(make.Make):
         #reed.remove(wedge)
         
         self.save(reed, 'reed')
+
         
+@config.help(
+    '[Experimental] Make a reed-shaping doodad.'
+    )
+class Make_reed_shaper(make.Make):
+    def run(self):
+        diameter = 7.0 
+        length = 15.0
+        
+        thickness0 = 2.0
+        thickness1 = 2.0
+        
+        outside = shape.empty_shape()
+        inside = shape.empty_shape()
+
+        for lens_amount in [ 0.85 ]:                
+            #bottom = shape.circle(diameter)
+            top = shape.lens(lens_amount).with_circumpherence(math.pi*diameter)
+            bottom = top
+            
+            outside.add(shape.extrusion(
+                [0.0,length],
+                [grow(bottom,thickness0),grow(top,thickness1)]
+                ))
+            inside.add(shape.extrusion(
+                [0.0,length],
+                [bottom,top]
+                ))
+        
+        thing = outside.copy()
+        thing.remove(inside)
+
+        wedge_thickness = diameter*0.2
+        wedge_loop = shape.Loop([
+            (length*0.333, 0.0),
+            (length*1.01, wedge_thickness*0.5),
+            (length*1.01, -wedge_thickness*0.5)
+            ])
+        wedge = shape.extrusion([-diameter*4,diameter*4],[wedge_loop,wedge_loop])
+        wedge.rotate(0,1,0,-90)
+        #wedge.rotate(0,0,1,90)
+        thing.remove(wedge)
+
+        self.save(thing, 'shaper')
         
