@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-
-Note:
-Without lip height adjustment (sop_flute_3), flute is a semitone flat unless cork pushed far in.
-
-5mm was to much (sop_flute_2).
-
-"""
-
-
+import copy
 
 import profile, design
 
@@ -136,10 +127,16 @@ class Flute_designer(design.Instrument_designer):
     # 0.56                 ~ definitely high, printed plastic sop flute
     
     embextra = 0.53
-    
-    @property
-    def hole_extra_height_by_diameter(self):
-        return [ 0.0 ] * 6 + [ self.embextra ]
+
+    def patch_instrument(self, inst):
+        inst = copy.copy(inst)        
+        inst.hole_lengths[-1] += inst.hole_diameters[-1] * self.embextra
+        return inst
+        
+#    
+#    @property
+#    def hole_extra_height_by_diameter(self):
+#        return [ 0.0 ] * 6 + [ self.embextra ]
     
     #hole_extra_height_by_diameter = [ 0.0 ] * 6 + [ 0.53 ]
     

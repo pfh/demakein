@@ -416,9 +416,9 @@ class Instrument_designer(config.Action_with_output_dir):
     def initial_hole_diameter_fractions(self):
         return [ 0.75 ] * self.n_holes
 
-    @property
-    def hole_extra_height_by_diameter(self):
-        return [ 0.0 ] * self.n_holes
+    #@property
+    #def hole_extra_height_by_diameter(self):
+    #    return [ 0.0 ] * self.n_holes
 
     @property
     def initial_state_vec(self):
@@ -494,8 +494,8 @@ class Instrument_designer(config.Action_with_output_dir):
             shift = math.sin(radians) * thickness
             inst.inner_hole_positions[i] = inst.hole_positions[i] + shift
             inst.hole_lengths[i] = (
-                math.sqrt(thickness*thickness+shift*shift) +
-                self.hole_extra_height_by_diameter[i] * inst.hole_diameters[i]
+                math.sqrt(thickness*thickness+shift*shift) 
+                #+ self.hole_extra_height_by_diameter[i] * inst.hole_diameters[i]
             )
         
         inst.inner_kinks = inner_kinks
