@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import copy
+import copy, math
 
 import profile, design
 
@@ -57,6 +57,14 @@ fingerings = {
         ('B5',   [0,0,0,0,0,1]),
         ('C#6',  [1,1,1,0,0,0]),
         ('D6',   [1,1,1,1,1,0]),
+
+        ('D4*3',   [1,1,1,1,1,1]),
+        ('E4*3',   [0,1,1,1,1,1]),
+        ('F#4*3',  [0,0,1,1,1,1]),
+        ('G4*3',   [0,0,0,1,1,1]),
+        ('A4*3',   [0,0,0,0,1,1]),
+        #('B4*3',   [0,0,0,0,0,1]),
+        #('C#5*3',  [0,0,0,0,0,0]),
 
         #('E6',   [0,1,1,1,1,1]),
         #('F6',   [1,0,1,1,1,1]),
@@ -145,25 +153,71 @@ class Flute_designer(design.Instrument_designer):
     initial_hole_fractions = [ 0.175 + 0.5*i/6 for i in range(6) ] + [ 0.97 ]
 
     
-    min_hole_diameters = design.sqrt_scaler([ 6.5 ] * 6  + [ 12.2 ])
-    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
+#    min_hole_diameters = design.sqrt_scaler([ 6.5 ] * 6  + [ 12.2 ])
+    min_hole_diameters = design.sqrt_scaler([ 3.0 ] * 6  + [ 6.0 ])
+#    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
+#    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 10.5 ])
+    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 11.4 ])
+    
+    divisions = [
+        [ (2, 0.0), (5, 0.0) ],
+        [ (2, 0.0), (5, 0.0), (5, 0.48) ],
+        [ (-1, 0.125), (2,0.0), (5,0.0), (5,0.48) ],
+        ]
 
 
+@config.Float_flag('taper', 'Amount of taper. Smaller = more tapered.')
+@config.Float_flag('outer_taper', 'Amount of tapering of wall thickness. Smaller = more tapered.')
 class Tapered_flute(Flute_designer):
-    inner_diameters = design.sqrt_scaler([ 14.0, 14.0, 18.4, 21.0, 18.4, 18.4 ])
-    initial_inner_fractions = [ 0.25, 0.7, 0.8, 0.9 ]
-    min_inner_fraction_sep = [ 0.0, 0.0, 0.03, 0.0, 0.0 ]
+    taper = 0.75
+    outer_taper = 0.9
+    
+    #inner_diameters = design.sqrt_scaler([ 14.0, 14.0, 18.4, 21.0, 18.4, 18.4 ])
+    @property
+    def inner_diameters(self):
+        scale = math.sqrt(self.scale)
+        return [
+            18.4 * self.taper * scale,
+            18.4 * self.taper * scale,
+            18.4 * (0.5+self.taper*0.5) * scale,
+            18.4 * scale,
+            #22.0 * scale,
+            #22.0 * scale,
+            21.0 * scale,
+            21.0 * scale,
+            18.4 * scale,
+            18.4 * scale,
+            ]
 
-    outer_diameters = design.sqrt_scaler([ 22.1, 32.0, 26.1 ])
+    #initial_inner_fractions = [ 0.25, 0.75 ]
+    #min_inner_fraction_sep = [ 0.0, 0.0, 0.0 ]
+    
+    initial_inner_fractions = [ 0.25,  0.3,  0.7, 0.8,0.81, 0.9 ]
+    min_inner_fraction_sep = [ 0.01, 0.1,0.1, 0.01, 0.01, 0.01, 0.01 ]
 
-    initial_outer_fractions = [ 0.666 ]
-    min_outer_fraction_sep = [ 0.666, 0.0 ] #Looks and feels nicer
+    #outer_diameters = design.sqrt_scaler([ 22.1, 32.0, 26.1 ])
+    @property
+    def outer_diameters(self):
+        scale = math.sqrt(self.scale)
+        end = 18.4 * (1.0-self.outer_taper) + 30.0 * self.outer_taper
+        return [
+            end * self.taper * scale,
+            end * self.taper * scale,
+            29.0 * scale,
+            29.0 * scale,
+            #30.0 * scale,
+            #30.0 * scale,
+            #32.0 * scale,
+            #29.0 * scale,
+            ]
+
+    initial_outer_fractions = [ 0.01, 0.666 ]
+    min_outer_fraction_sep = [ 0.0, 0.5, 0.0 ] #Looks and feels nicer
 
 
 class Straight_flute(Flute_designer):
-    inner_diameters = design.sqrt_scaler([ 18.4, 18.4, 21.0, 18.4, 18.4 ])
-    initial_inner_fractions = [ 0.7, 0.8, 0.9 ]
-    
+    inner_diameters = design.sqrt_scaler([ 18.4, 18.4, 21.0, 18.4, 17.0 ])
+    initial_inner_fractions = [ 0.7, 0.8, 0.9 ]    
     min_inner_fraction_sep = [ 0.5, 0.03, 0.0, 0.0 ]
     # Note constraint of bulge to upper half of tube.
     # There seems to be an alternate solution for the folk flute
@@ -179,7 +233,9 @@ class Straight_flute(Flute_designer):
 class Pflute(Flute_designer):
     fingering_system = 'pflute'
     balance = [ 0.05, None, None, 0.05 ]    
-    hole_angles = [ -30.0, -30.0, 30.0, -30.0, 30.0, -30.0, 0.0 ]
+    #hole_angles = [ -30.0, -30.0, 30.0, -30.0, 30.0, -30.0, 0.0 ]
+    #hole_angles = [ 30.0, -30.0, 30.0, 0.0, 0.0, 0.0, 0.0 ]
+    hole_angles = [ 0.0, -30.0, 30.0, 0.0, 0.0, 0.0, 0.0 ]
 
 @config.help("""\
 Design a flute with a tapered bore and recorder-like fingering system.
@@ -194,9 +250,11 @@ class Design_straight_pflute(Straight_flute, Pflute): pass
 class Folk_flute(Flute_designer):
     fingering_system = 'folk'
     balance = [ 0.05, None, None, 0.05 ]    
-    hole_angles = [ -30.0, 30.0, 0.0,  0.0, 0.0, 0.0, 0.0 ]
-    min_hole_diameters = design.sqrt_scaler([ 7.5 ] * 6  + [ 12.2 ])
-    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
+    hole_angles = [ -30.0, 30.0, 30.0,  -30.0, 0.0, 30.0, 0.0 ]
+    #min_hole_diameters = design.sqrt_scaler([ 7.5 ] * 6  + [ 12.2 ])
+    #max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
+    
+    max_hole_spacing = design.scaler([ 35.0, 35.0, None, 35.0, 35.0, None ])
 
 @config.help("""\
 Design a flute with a tapered bore and pennywhistle-like fingering system.

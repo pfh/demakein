@@ -113,7 +113,7 @@ class Working(object): pass
     'Add some extra thickness around sockets.'
     )
 class Make_instrument(config.Action_with_working_dir, Make_base):
-    gap = 0.25
+    gap = 0.2
     fingerpads = False
     join = 'weld'
     thick_sockets = False

@@ -72,13 +72,13 @@ class Make_flute(make.Make_instrument):
         outer_profile = spec.outer.clipped(0,length)
         if self.decorate:
            emfrac = 1.0-spec.hole_positions[-1]/length
-           for frac, align in [ (0.0,1.0), (1.0-emfrac*2,1.0), (1.0,-1.0) ]:
+           for frac, align in [ (1.0-emfrac*2,1.0), (1.0,-1.0) ]:
                dpos = length * frac
-               damount = outer_profile(dpos)*0.2
+               damount = outer_profile(dpos)*0.1
                dpos += damount * align
                deco_profile = profile.Profile(
-                   [ dpos+damount*i for i in [-1,0,1]],
-                   [ damount*i      for i in [0,1,0] ],
+                   [ dpos+damount*i for i in [-1,-0.333,0.333,1]],
+                   [ damount*i      for i in [0,1,1,0] ],
                )
                outer_profile = outer_profile + deco_profile
 
@@ -86,9 +86,10 @@ class Make_flute(make.Make_instrument):
         self.make_instrument(
              inner_profile=inner_profile, outer_profile=outer_profile, 
              hole_positions=spec.hole_positions, hole_diameters=spec.hole_diameters, hole_vert_angles=spec.hole_angles, 
-             hole_horiz_angles=[0.0]*7,
+             #hole_horiz_angles=[0.0]*7,
+             hole_horiz_angles=[0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0],
              xpad=[0.0]*7, 
-             ypad=[0.0]*6+[0.75], 
+             ypad=[0.0]*6+[0.5], #[0.75], 
              with_fingerpad=[True]*6+[False])
         
         #instrument = shape.extrude_profile(outer_profile)
@@ -144,106 +145,27 @@ class Make_flute(make.Make_instrument):
             )
         
         else:
-            cut1 = min(spec.hole_positions[3],spec.inner_hole_positions[3])-spec.hole_diameters[3] * 0.75
-            cut1 -= spec.inner(cut1)*0.5
-            #cut1 = spec.inner_hole_positions[2]*0.5+spec.inner_hole_positions[3] * 0.5
-            #cut2 = cut1 + (length-cut1)*0.3 + spec.outer.maximum()*0.7
-            cut2 = length * 0.62
+            for division in designer.divisions:
+                cuts = [ ]
+                for hole, above in division:
+                    if hole >= 0:
+                        cut = spec.hole_positions[hole] + 2*spec.hole_diameters[hole]
+                    else:
+                        cut = 0.0
+                    cut += (length-cut)*above
+                    cuts.append(cut)
+                    
+                self.segment(cuts, length, up=False)
 
-            self.segment([ cut1, cut2 ], length, up=False)
+
+            #cut1 = min(spec.hole_positions[3],spec.inner_hole_positions[3])-spec.hole_diameters[3] * 0.75
+            #cut1 -= spec.inner(cut1)*0.5
+            ##cut1 = spec.inner_hole_positions[2]*0.5+spec.inner_hole_positions[3] * 0.5
+            ##cut2 = cut1 + (length-cut1)*0.3 + spec.outer.maximum()*0.7
+            #cut2 = length * 0.62
+            #
+            #self.segment([ cut1, cut2 ], length, up=False)
             
-            #shapes = [ ]
-            #
-            #cuts = [ 
-            #    cut1,
-            #    cut2,
-            #]
-            #
-            #remainder = working.instrument.copy()
-            #for cut in cuts:
-            #    d1 = spec.inner(cut)
-            #    d3 = spec.outer(cut)
-            #    d2 = (d1+d3) / 2.0
-            #    
-            #    
-            #    d4 = spec.outer.maximum() * 2.0
-            #    p1 = cut-d2*0.4
-            #    p3 = cut+d2*0.4
-            #    p2 = p1 + (d3-d1)*0.25
-            #
-            #    #0.4mm clearance all around
-            #    # radius -> diameter    * 2
-            #    # adjust both diamerers / 2
-            #    # net effect            * 1
-            #    # 0.4mm was loose
-            #    
-            #    d1a = d1 - self.gap
-            #    p1b = p1 - self.gap
-            #    
-            #    d2a = d2 - self.gap
-            #    d2b = d2 + self.gap
-            #    
-            #    prof_inside = profile.Profile(
-            #        [ p1,  p2,  p3,  length+50 ],
-            #        [ d1a, d2a, d2a, d4 ],
-            #        [ d1a, d2a, d4,  d4 ],
-            #    )
-            #    prof_outside = profile.Profile(
-            #        [ p1b, p2,  p3,  length+50 ],
-            #        [ d1,  d2b, d2b, d4 ],
-            #        [ d1,  d2b, d4,  d4 ],
-            #    )
-            #    mask_inside = shape.extrude_profile(prof_inside)
-            #    mask_outside = shape.extrude_profile(prof_outside)
-            #    
-            #    item = remainder.copy()
-            #    item.remove(mask_outside)                
-            #    remainder.clip(mask_inside)
-            #    shapes.append(item)
-            #shapes.append(remainder)
-            #shapes = shapes[::-1]
-            #
-            #for i, item in enumerate(shapes):
-            #    item.rotate(0,1,0, 180)
-            #
-            #    self.save(item, self.prefix + 'segment-%d-of-%d' % (i+1,len(shapes)))
-        
-        #if self.forms == 1:
-        #    lower, upper = shape.make_formwork(
-        #        outside, bore, length,
-        #        [ 0.0, 0.6, 1.0 ],
-        #        [ 0.0, 0.4, 1.0 ],
-        #        3.0, 6.0, self.thickness, 200.0
-        #    )
-        #    
-        #    self.save(lower,'lower.stl')
-        #    self.save(upper,'upper.stl')
-        #    
-        #    shape.show_only(instrument, lower, upper)
-        #
-        #elif self.forms == 2:
-        #    lower1, upper1 = shape.make_formwork(
-        #        outside, bore, length,
-        #        [ 0.0, 0.36, 0.66, 1.0 ],
-        #        [ ],
-        #        3.0, 6.0, self.thickness, 200.0
-        #    )
-        #    lower2, upper2 = shape.make_formwork(
-        #        outside, bore, length,
-        #        [ ],
-        #        [ 0.0, 0.25, 0.5, 0.75, 1.0 ],
-        #        3.0, 6.0, self.thickness, 200.0
-        #    )
-        #    
-        #    self.save(lower1,'lower1.stl')
-        #    self.save(upper1,'upper1.stl')
-        #    self.save(lower2,'lower2.stl')
-        #    self.save(upper2,'upper2.stl')
-        #    
-        #    shape.show_only(instrument, lower1,upper1,lower2,upper2)
-        #
-        #else:
-        #     assert False, 'Unsupported number of forms'
     
 
 if __name__ == '__main__': 
