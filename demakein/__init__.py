@@ -1,6 +1,6 @@
-VERSION = '0.10'
+VERSION = '0.11'
 
-from .design_flute import Design_tapered_pflute, Design_straight_pflute, Design_tapered_folk_flute, Design_straight_folk_flute
+from .design_flute import Design_pflute, Design_folk_flute
 from .make_flute import Make_flute
 from .make_cork import Make_cork
 
@@ -27,10 +27,8 @@ def main():
     nesoni.run_toolbox([
             'Demakein '+VERSION,
             'Flutes',
-            Design_tapered_pflute, 
-            Design_straight_pflute, 
-            Design_tapered_folk_flute, 
-            Design_straight_folk_flute,
+            Design_pflute, 
+            Design_folk_flute, 
             Make_flute,
             Make_cork,
             

@@ -55,14 +55,15 @@ fingerings = {
         ('G5',   [0,0,0,1,1,1]),
         ('A5',   [0,0,0,0,1,1]),
         ('B5',   [0,0,0,0,0,1]),
-        ('C#6',  [1,1,1,0,0,0]),
+        #('C#6',  [1,1,1,0,0,0]),
+        ('C#6',  [0,0,0,0,0,0]),
         ('D6',   [1,1,1,1,1,0]),
 
-        ('D4*3',   [1,1,1,1,1,1]),
-        ('E4*3',   [0,1,1,1,1,1]),
-        ('F#4*3',  [0,0,1,1,1,1]),
-        ('G4*3',   [0,0,0,1,1,1]),
-        ('A4*3',   [0,0,0,0,1,1]),
+      #  ('D4*3',   [1,1,1,1,1,1]),
+      #  ('E4*3',   [0,1,1,1,1,1]),
+      #  ('F#4*3',  [0,0,1,1,1,1]),
+      #  ('G4*3',   [0,0,0,1,1,1]),
+      #  ('A4*3',   [0,0,0,0,1,1]),
         #('B4*3',   [0,0,0,0,0,1]),
         #('C#5*3',  [0,0,0,0,0,0]),
 
@@ -154,7 +155,7 @@ class Flute_designer(design.Instrument_designer):
 
     
 #    min_hole_diameters = design.sqrt_scaler([ 6.5 ] * 6  + [ 12.2 ])
-    min_hole_diameters = design.sqrt_scaler([ 3.0 ] * 6  + [ 6.0 ])
+    min_hole_diameters = design.sqrt_scaler([ 3.0 ] * 6  + [ 11.3 ])
 #    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
 #    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 10.5 ])
     max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 11.4 ])
@@ -229,25 +230,30 @@ class Straight_flute(Flute_designer):
     #min_outer_fraction_sep = [ 0.666, 0.0 ] #Looks and feels nicer
 
 
-
-class Pflute(Flute_designer):
+@config.help(
+    'Design a flute with a recorder-like fingering system.'
+    )
+class Design_pflute(Tapered_flute):
     fingering_system = 'pflute'
     balance = [ 0.05, None, None, 0.05 ]    
     #hole_angles = [ -30.0, -30.0, 30.0, -30.0, 30.0, -30.0, 0.0 ]
     #hole_angles = [ 30.0, -30.0, 30.0, 0.0, 0.0, 0.0, 0.0 ]
     hole_angles = [ 0.0, -30.0, 30.0, 0.0, 0.0, 0.0, 0.0 ]
 
-@config.help("""\
-Design a flute with a tapered bore and recorder-like fingering system.
-""")
-class Design_tapered_pflute(Tapered_flute, Pflute): pass
+#@config.help("""\
+#Design a flute with a tapered bore and recorder-like fingering system.
+#""")
+#class Design_tapered_pflute(Tapered_flute, Pflute): pass
+#
+#@config.help("""\
+#Design a flute with a straight bore and recorder-like fingering system.
+#""")
+#class Design_straight_pflute(Straight_flute, Pflute): pass
 
-@config.help("""\
-Design a flute with a straight bore and recorder-like fingering system.
-""")
-class Design_straight_pflute(Straight_flute, Pflute): pass
-
-class Folk_flute(Flute_designer):
+@config.help(
+    'Design a flute with a pennywhistle-like fingering system.'
+    )
+class Design_folk_flute(Tapered_flute):
     fingering_system = 'folk'
     balance = [ 0.05, None, None, 0.05 ]    
     hole_angles = [ -30.0, 30.0, 30.0,  -30.0, 0.0, 30.0, 0.0 ]
@@ -256,15 +262,15 @@ class Folk_flute(Flute_designer):
     
     max_hole_spacing = design.scaler([ 35.0, 35.0, None, 35.0, 35.0, None ])
 
-@config.help("""\
-Design a flute with a tapered bore and pennywhistle-like fingering system.
-""")
-class Design_tapered_folk_flute(Tapered_flute, Folk_flute): pass
-
-@config.help("""\
-Design a flute with a straight bore and pennywhistle-like fingering system.
-""")
-class Design_straight_folk_flute(Straight_flute, Folk_flute): pass
-
+#@config.help("""\
+#Design a flute with a tapered bore and pennywhistle-like fingering system.
+#""")
+#class Design_tapered_folk_flute(Tapered_flute, Folk_flute): pass
+#
+#@config.help("""\
+#Design a flute with a straight bore and pennywhistle-like fingering system.
+#""")
+#class Design_straight_folk_flute(Straight_flute, Folk_flute): pass
+#
 
 
