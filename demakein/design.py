@@ -420,6 +420,18 @@ class Instrument_designer(config.Action_with_output_dir):
     #def hole_extra_height_by_diameter(self):
     #    return [ 0.0 ] * self.n_holes
 
+
+    #state_vars = [
+    #    'length',
+    #    'hole_fractions',
+    #    'outer_fractions',
+    #    'inner_fractions',
+    #    'inner_diameters',
+    #    'outer_diameters',
+    #    ]
+    #...
+    #
+
     @property
     def initial_state_vec(self):
         assert len(self.initial_hole_fractions) == self.n_holes, 'initial_hole_fractions has wrong length'
@@ -753,6 +765,7 @@ class Instrument_designer(config.Action_with_output_dir):
         assert self.initial_length is not None, 'Initial length required'
         assert len(self.min_hole_diameters) == self.n_holes
         assert len(self.max_hole_diameters) == self.n_holes
+        assert len(self.hole_angles) == self.n_holes
         assert len(self.inner_diameters) >= 2
         assert len(self.outer_diameters) >= 2
 

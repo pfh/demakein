@@ -155,9 +155,10 @@ class Flute_designer(design.Instrument_designer):
 
     
 #    min_hole_diameters = design.sqrt_scaler([ 6.5 ] * 6  + [ 12.2 ])
-    min_hole_diameters = design.sqrt_scaler([ 3.0 ] * 6  + [ 11.3 ])
 #    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
 #    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 10.5 ])
+
+    min_hole_diameters = design.sqrt_scaler([ 3.0 ] * 6  + [ 11.3 ])
     max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 11.4 ])
     
     divisions = [
@@ -182,10 +183,10 @@ class Tapered_flute(Flute_designer):
             18.4 * self.taper * scale,
             18.4 * (0.5+self.taper*0.5) * scale,
             18.4 * scale,
-            #22.0 * scale,
-            #22.0 * scale,
             21.0 * scale,
             21.0 * scale,
+            #21.0 * scale,
+            #21.0 * scale,
             18.4 * scale,
             18.4 * scale,
             ]
@@ -235,10 +236,13 @@ class Straight_flute(Flute_designer):
     )
 class Design_pflute(Tapered_flute):
     fingering_system = 'pflute'
-    balance = [ 0.05, None, None, 0.05 ]    
+    balance = [ 0.1, None, None, 0.05 ]    
     #hole_angles = [ -30.0, -30.0, 30.0, -30.0, 30.0, -30.0, 0.0 ]
     #hole_angles = [ 30.0, -30.0, 30.0, 0.0, 0.0, 0.0, 0.0 ]
-    hole_angles = [ 0.0, -30.0, 30.0, 0.0, 0.0, 0.0, 0.0 ]
+    hole_angles = [ 30.0, -30.0, 30.0, 0.0, 0.0, 0.0, 0.0 ]
+
+    max_hole_spacing = design.scaler([ 45.0, 45.0, None, 45.0, 45.0, None ])
+
 
 #@config.help("""\
 #Design a flute with a tapered bore and recorder-like fingering system.
@@ -272,5 +276,51 @@ class Design_folk_flute(Tapered_flute):
 #""")
 #class Design_straight_folk_flute(Straight_flute, Folk_flute): pass
 #
+
+#
+#class With_tuning_holes(Design_pflute):
+#    #@property
+#    #def n_holes(self):
+#    #    x = super(With_tuning_holes,self).n_holes
+#    #    print x
+#    #    return 1+x
+#    
+#    tuning_holes = 2
+#    
+#    @property
+#    def min_hole_diameters(self):
+#        x = super(With_tuning_holes,self).min_hole_diameters
+#        return [ 0.1 ]*self.tuning_holes+x
+#    @property
+#    def max_hole_diameters(self):
+#        x = super(With_tuning_holes,self).max_hole_diameters
+#        d = self.inner_diameters[0]
+#        return [d*0.5]*self.tuning_holes+x
+#    @property
+#    def balance(self):
+#        x = super(With_tuning_holes,self).balance
+#        return [None]*self.tuning_holes+x
+#    @property
+#    def max_hole_spacing(self):
+#        x = super(With_tuning_holes,self).max_hole_spacing
+#        return [None]*self.tuning_holes+x
+#    @property
+#    def initial_hole_fractions(self):
+#        x = super(With_tuning_holes,self).initial_hole_fractions
+#        return [ (i+1.0)/(self.tuning_holes+1.0) for i in xrange(self.tuning_holes) ]+x
+#    @property
+#    def hole_angles(self):
+#        x = super(With_tuning_holes,self).hole_angles
+#        return [0.0]*self.tuning_holes+x
+#    @property
+#    def fingerings(self):
+#        x = super(With_tuning_holes,self).fingerings
+#        return [ (a,[0]*self.tuning_holes+b) for a,b in x ]
+#
+
+
+
+
+
 
 
