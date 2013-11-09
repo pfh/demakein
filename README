@@ -40,23 +40,15 @@ Python 2
     Reported to be possible, however I can't give exact instructions.
 
 - Windows:
-    Run Linux in a virtual machine such as VirtualBox
+    Run Linux in a virtual machine such as VirtualBox.
     (confirmed to work)
-    
-    OR
-
-    This may or may not work:
-    http://docs.python-guide.org/en/latest/starting/install/win/
-    - install python 2 using the MSI package
-    - install distribute using the linked script
-    - install pip using easy_install
     
 The "design" tools require nesoni. They should work on all platforms that
 Python runs on.
 
 - nesoni
 
-  pip install nesoni
+  sudo pip install --upgrade nesoni
 
 The "make" tools additionally require CGAL and associated paraphenalia.
 I have only tested this on Linux, but I'm told it's possible on OS X as well.
@@ -66,35 +58,72 @@ I have only tested this on Linux, but I'm told it's possible on OS X as well.
 - libcffi
 - CGAL
 
-  apt-get install g++ cmake libffi-dev libcgal-dev
+  sudo apt-get install g++ cmake libffi-dev libcgal-dev
 
 - cffi
 
-  pip install cffi
+  sudo pip install --upgrade cffi
 
 
-Installation
-============
+Installation, easiest method
+============================
 
-Easy way:
+On a Debian or Ubuntu Linux system:
 
-  pip install demakein
+  sudo apt-get install g++ cmake libffi-dev libcgal-dev python-pip geeqie
 
-From source: Download and untar tarball then
+  sudo pip install --upgrade demakein
 
-  python setup.py install
+("--upgrade" ensures the latest version is installed)
 
-You can then run program by typing
+You can then run program by typing:
 
   demakein
-
-or
-
+or:
   python -m demakein
 
 
-Note:
-If you know how to set it up, using PyPy will let Demakein run considerably faster.
+
+PyPy installation
+=================
+
+Using PyPy will let Demakein run considerably faster.
+
+The easiest way to do this presently is to create a
+"virtualenv".
+
+  sudo apt-get install g++ cmake libffi-dev libcgal-dev python-pip geeqie
+  sudo apt-get install pypy python-virtualenv
+
+  virtualenv -p pypy myenv
+
+  myenv/bin/pip install --upgrade demakein
+
+You can then run demakein with:
+
+  myenv/bin/demakein
+or:
+  myenv/bin/python -m demakein
+  
+
+Installation from source
+========================
+
+If using the "make" part of Demakein, you will need to install:
+
+- g++
+- cmake
+- CGAL
+- libffi
+
+and from the Python Package Index, install:
+
+- nesoni
+- cffi
+
+Download and untar tarball and in the untarred directory:
+
+  sudo python setup.py install
 
 
 Examples
@@ -102,7 +131,7 @@ Examples
 
 Create a small flute:
 
-  demakein design-straight-folk-flute: myflute --transpose 12
+  demakein design-folk-flute: myflute --transpose 12
   
   demakein make-flute: myflute
 
