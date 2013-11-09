@@ -14,7 +14,7 @@ Fingerholes are enumerated from bottom (end-most) to top.
 
 """
 
-import math, os, pickle, sys, random
+import math, os, pickle, sys, random, collections
 
 import profile, svg
 
@@ -317,6 +317,26 @@ class Instrument:
         #return low*pow(step, best-b*0.5/a)
 
 
+def low_high(vec):
+    low = [ ]
+    high = [ ]
+    for item in vec:
+        if isinstance(item, collections.Sequence):
+           assert len(item) == 2
+           low.append(item[0])
+           high.append(item[1])
+        else:
+           low.append(item)
+           high.append(item)
+    return low, high
+
+def describe_low_high(item):
+    if isinstance(item, collections.Sequence):
+       return '%.1f->%.1f' % item
+    else:
+       return '%.1f' % item
+
+
 def scaler(value):
     @property
     def func(self):
@@ -455,6 +475,11 @@ class Instrument_designer(config.Action_with_output_dir):
     max_grad = 1e30
 
     def unpack(self, state_vec):
+        inner_low, inner_high = low_high(self.inner_diameters)
+        outer_low, outer_high = low_high(self.outer_diameters)
+        inner_angle_low, inner_angle_high = low_high(self.inner_angles)
+        outer_angle_low, outer_angle_high = low_high(self.outer_angles)
+    
         inst = self.instrument_class()
         
         scale = self.scale
@@ -480,17 +505,17 @@ class Instrument_designer(config.Action_with_output_dir):
         
         inst.inner = profile.curved_profile(
             [0.0]+inner_kinks+[inst.length],
-            self.inner_diameters,
-            self.inner_diameters,
-            self.inner_angles,
-            self.inner_angles,
+            inner_low,
+            inner_high,
+            inner_angle_low,
+            inner_angle_high,
         )
         inst.outer = profile.curved_profile(
             [0.0]+outer_kinks+[inst.length],
-            self.outer_diameters,
-            self.outer_diameters,
-            self.outer_angles,
-            self.outer_angles,
+            outer_low,
+            outer_high,
+            outer_angle_low,
+            outer_angle_high,
         )
         
         if self.outer_add:
@@ -741,19 +766,28 @@ class Instrument_designer(config.Action_with_output_dir):
             )
             
             #if any_extra:
-            w3, grad3 = mod_instrument.true_wavelength_near(w1, fingers, self.max_grad)
-            cents3 = int(round( log2(w3/w1) * 1200.0 ))
-            diagram.text(graph_x + width, text_y,
-                  '%s %-4d cents grad=%.1f diff=%d' % ('     ' if cents3 == 0 else ' flat' if cents3 > 0 else 'sharp', abs(cents3), grad3, cents3-cents)
-            )
+            #w3, grad3 = mod_instrument.true_wavelength_near(w1, fingers, self.max_grad)
+            #cents3 = int(round( log2(w3/w1) * 1200.0 ))
+            #diagram.text(graph_x + width, text_y,
+            #      '%s %-4d cents grad=%.1f diff=%d' % ('     ' if cents3 == 0 else ' flat' if cents3 > 0 else 'sharp', abs(cents3), grad3, cents3-cents)
+            #)
             
             
             text_y -= 25
             
             
         
-        diagram.text(0.0, 20.0, 'Outer diameters: %s' % ', '.join('%.1fmm'%item for item in self.outer_diameters))
-        diagram.text(0.0, 40.0, 'Inner diameters: %s' % ', '.join('%.1fmm'%item for item in self.inner_diameters))
+        diagram.text(0.0, 20.0, 'Outer diameters:')
+        kinks = [0.0]+self.instrument.outer_kinks+[self.instrument.length]
+        for i, item in enumerate(self.outer_diameters):
+            diagram.text(0.0, 20.0+(len(self.outer_diameters)-i)*10.0, 
+                describe_low_high(item) + 'mm at %.1fmm' % kinks[i]) 
+        
+        diagram.text(150.0, 20.0, 'Inner diameters:')
+        kinks = [0.0]+self.instrument.inner_kinks+[self.instrument.length]
+        for i, item in enumerate(self.inner_diameters):
+            diagram.text(150.0, 20.0+(len(self.inner_diameters)-i)*10.0, 
+                describe_low_high(item) + 'mm at %.1fmm' % kinks[i]) 
         
         diagram.save( os.path.join(self.output_dir, 'diagram.svg') )
         
