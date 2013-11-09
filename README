@@ -32,17 +32,24 @@ Requirements
 ============
 
 Python 2
+
 - Linux:
     Use your package manager to install Python 2 and pip.
+
 - OS X
     Reported to be possible, however I can't give exact instructions.
+
 - Windows:
+    Run Linux in a virtual machine such as VirtualBox
+    (confirmed to work)
+    
+    OR
+
     This may or may not work:
     http://docs.python-guide.org/en/latest/starting/install/win/
     - install python 2 using the MSI package
     - install distribute using the linked script
     - install pip using easy_install
-    I'm sorry this is so involved.
     
 The "design" tools require nesoni. They should work on all platforms that
 Python runs on.
@@ -109,7 +116,8 @@ to CNC-mill the flute?
 
 If you want to create your own custom instruments, you can create
 subclasses of the instruments provided. Some examples of how to do
-this can be found in the "examples" directory.
+this can be found in the "examples" directory. You can use these
+as a starting point.
 
 
 Instrument design tools are subclasses of demakein.design.Instrument_designer.
@@ -122,6 +130,8 @@ closed_top
   A ney has an open end.
   A flute might be approximated as an open end, or the embouchure
   hole treated as a hole and the end set to closed.
+  See examples/simple_reedpipe.py for an example with closed_top=True.
+  See examples/simple_flute.py for an example with closed_top=False.
 
 inital_length
 - float
@@ -170,12 +180,17 @@ hole_angles
   Angled holes may allow more comfortable hole spacing.
 
 inner_diameters
-- list of floats
+- list of floats [advanced: or tuples (low,high)]
   The first element is the bore diameter at the base of the instrument.
   The last element is the bore diameter at the top of the instrument.
   The bore is piecewise linear,
   intervening elements are bore diameters boundaries between pieces (kinks).
   Exact placement is subject to numerical optimization.
+  
+  Advanced: 
+  Instead of a single diameter, you can give a tuple (low,high)
+  to create a step in the diameter of the bore.
+  See the examples/stepped_shawm.py for an example of this.
   
 initial_inner_fractions
 - list of len(inner_diameters)-2 floats
@@ -193,7 +208,12 @@ min_outer_fraction_sep
   but defining the shape of the outside of the instrument
   (hence the depth of each finger hole).
 
-
+outer_add
+- bool, default False
+  Optionally the outside diameters of the instrument can be defined
+  as being in addition to the bore diameters rather than
+  independent of them.
+  See examples/simple_shawm.py for an example of this.
 
 
 
