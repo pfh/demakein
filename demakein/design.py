@@ -273,7 +273,7 @@ class Instrument:
             grad = -m*intercept
             if grad > max_grad: return None
             
-            assert x1 <= intercept <= x2
+            #assert x1 <= intercept <= x2, '%f %f %f' % (x1,intercept,x2)
             return intercept, grad
         
         for iteration in range(max_steps):

@@ -68,7 +68,7 @@ def make_update(vecs, initial_accuracy, do_noise):
     return update
 
 
-def improve(comment, constrainer, scorer, start_x, ftol=1e-4, initial_accuracy=0.001, monitor = lambda x,y: None):
+def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial_accuracy=0.01, monitor = lambda x,y: None):
     pool_size = legion.coordinator().get_cores()
     
     worker_futs = [ legion.coordinator().new_future() for i in xrange(pool_size) ]
@@ -153,7 +153,18 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, initial_accuracy=0
                     best_score = new_score
                     best = new
             
-            done = not best_score[0] and n_good >= 5000 and (max(item[1] for item in currents)[1]-best_score[1]) < ftol
+            if not best_score[0]:
+                xspan = 0.0
+                for i in xrange(len(start_x)):
+                    xspan = max(xspan,
+                        max(item[0][i] for item in currents) -
+                          min(item[0][i] for item in currents)
+                        )
+                
+                fspan = (max(item[1] for item in currents)[1]-best_score[1]) 
+                
+                if xspan < xtol or (n_good >= 5000 and fspan < ftol):
+                    done = True
             i += 1
         
         grace.status('')
