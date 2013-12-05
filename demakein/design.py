@@ -352,6 +352,13 @@ def sqrt_scaler(value):
         return [ item*scale if item is not None else None for item in value ]
     return func
 
+def power_scaler(power, value):
+    @property
+    def func(self):
+        scale = self.scale ** power
+        return [ item*scale if item is not None else None for item in value ]
+    return func
+
 
 @config.Int_flag('transpose', 'Transpose instrument by this many semitones.')
 class Instrument_designer(config.Action_with_output_dir):

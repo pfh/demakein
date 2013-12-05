@@ -158,35 +158,34 @@ class Flute_designer(design.Instrument_designer):
 #    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
 #    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 10.5 ])
 
-    min_hole_diameters = design.sqrt_scaler([ 3.0 ] * 6  + [ 11.3 ])
-    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 11.4 ])
+    min_hole_diameters = design.power_scaler(1/3., [ 3.0 ] * 6  + [ 11.3 ])
+    max_hole_diameters = design.power_scaler(1/3., [ 11.4 ] * 6 + [ 11.4 ])
     
     divisions = [
+        [ (5, 0.0) ],
         [ (2, 0.0), (5, 0.0) ],
-        [ (2, 0.0), (5, 0.0), (5, 0.48) ],
-        [ (-1, 0.125), (2,0.0), (5,0.0), (5,0.48) ],
+        [ (-1, 0.125), (2, 0.0), (5, 0.0), ],
+        [ (-1, 0.125), (2,0.0), (5,0.0), (5,0.45) ],
         ]
 
 
-@config.Float_flag('taper', 'Amount of taper. Smaller = more tapered.')
-@config.Float_flag('outer_taper', 'Amount of tapering of wall thickness. Smaller = more tapered.')
+@config.Float_flag('inner_taper', 'Amount of tapering of bore. Smaller = more tapered.')
+@config.Float_flag('outer_taper', 'Amount of tapering of exterior. Smaller = more tapered.')
 class Tapered_flute(Flute_designer):
-    taper = 0.75
-    outer_taper = 0.9
+    inner_taper = 0.75
+    outer_taper = 0.85
     
     #inner_diameters = design.sqrt_scaler([ 14.0, 14.0, 18.4, 21.0, 18.4, 18.4 ])
     @property
     def inner_diameters(self):
-        scale = math.sqrt(self.scale)
+        scale = self.scale ** (1./2)
         return [
-            18.4 * self.taper * scale,
-            18.4 * self.taper * scale,
-            18.4 * (0.5+self.taper*0.5) * scale,
+            18.4 * self.inner_taper * scale,
+            18.4 * self.inner_taper * scale,
+            18.4 * (0.5+self.inner_taper*0.5) * scale,
             18.4 * scale,
             21.0 * scale,
             21.0 * scale,
-            #21.0 * scale,
-            #21.0 * scale,
             18.4 * scale,
             18.4 * scale,
             ]
@@ -200,11 +199,10 @@ class Tapered_flute(Flute_designer):
     #outer_diameters = design.sqrt_scaler([ 22.1, 32.0, 26.1 ])
     @property
     def outer_diameters(self):
-        scale = math.sqrt(self.scale)
-        end = 18.4 * (1.0-self.outer_taper) + 30.0 * self.outer_taper
+        scale = self.scale ** (1./2)
         return [
-            end * self.taper * scale,
-            end * self.taper * scale,
+            29.0 * self.outer_taper * scale,
+            29.0 * self.outer_taper * scale,
             29.0 * scale,
             29.0 * scale,
             #30.0 * scale,
@@ -216,20 +214,20 @@ class Tapered_flute(Flute_designer):
     initial_outer_fractions = [ 0.01, 0.666 ]
     min_outer_fraction_sep = [ 0.0, 0.5, 0.0 ] #Looks and feels nicer
 
-
-class Straight_flute(Flute_designer):
-    inner_diameters = design.sqrt_scaler([ 18.4, 18.4, 21.0, 18.4, 17.0 ])
-    initial_inner_fractions = [ 0.7, 0.8, 0.9 ]    
-    min_inner_fraction_sep = [ 0.5, 0.03, 0.0, 0.0 ]
-    # Note constraint of bulge to upper half of tube.
-    # There seems to be an alternate solution for the folk flute
-    #   where it's stretched out over 3/4 of the flute's length.
-
-    outer_diameters = design.sqrt_scaler([ 28.0, 28.0 ])
-
-    #initial_outer_fractions = [ 0.666 ]
-    #min_outer_fraction_sep = [ 0.666, 0.0 ] #Looks and feels nicer
-
+#
+#class Straight_flute(Flute_designer):
+#    inner_diameters = design.sqrt_scaler([ 18.4, 18.4, 21.0, 18.4, 17.0 ])
+#    initial_inner_fractions = [ 0.7, 0.8, 0.9 ]    
+#    min_inner_fraction_sep = [ 0.5, 0.03, 0.0, 0.0 ]
+#    # Note constraint of bulge to upper half of tube.
+#    # There seems to be an alternate solution for the folk flute
+#    #   where it's stretched out over 3/4 of the flute's length.
+#
+#    outer_diameters = design.sqrt_scaler([ 28.0, 28.0 ])
+#
+#    #initial_outer_fractions = [ 0.666 ]
+#    #min_outer_fraction_sep = [ 0.666, 0.0 ] #Looks and feels nicer
+#
 
 @config.help(
     'Design a flute with a recorder-like fingering system.'
@@ -259,7 +257,7 @@ class Design_pflute(Tapered_flute):
     )
 class Design_folk_flute(Tapered_flute):
     fingering_system = 'folk'
-    balance = [ 0.05, None, None, 0.05 ]    
+    balance = [ 0.01, None, None, 0.01 ]    
     hole_angles = [ -30.0, 30.0, 30.0,  -30.0, 0.0, 30.0, 0.0 ]
     #min_hole_diameters = design.sqrt_scaler([ 7.5 ] * 6  + [ 12.2 ])
     #max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
