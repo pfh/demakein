@@ -6,6 +6,7 @@ try:
 except:
     import numpypy as numpy
 
+import nesoni
 from nesoni import config
 
 
@@ -46,6 +47,21 @@ def line_param(x1,y1,x2,y2):
     c = y1-m*x1
     return m,c
 
+def line_points2(x1,y1,x2,y2):
+    """ Integer points near a line between integer coordinates
+    """
+    steps = int(max(abs(x2-x1),abs(y2-y1)))
+    
+    if steps == 0: return [ (x1,y1) ]
+    
+    result = [ ]
+    rounder = steps//2
+    for i in xrange(steps+1):
+        result.append((
+           x1+((x2-x1)*i+rounder)//steps,
+           y1+((y2-y1)*i+rounder)//steps,
+        ))
+    return result
 
 def draw_triangle(tri, rast):
     verts = sorted(tri, key=lambda vert: vert[0])
@@ -140,7 +156,7 @@ def raster(filename, res):
     rast = numpy.empty((int(size[1])+1,int(size[0])+1), 'float64')
     rast[:,:] = -size[2]
     
-    print rast.shape
+    print 'Raster size:', rast.shape[0], 'x', rast.shape[1]
     
     for tri in tris:
         draw_triangle(tri, rast)
@@ -561,136 +577,171 @@ def load(filename):
 
 
 @config.Positional('stl', 'STL input file')
-@config.Integer_flag('res', 'Resolution.')
-class Raster(config.Action_with_prefix):
+@config.Int_flag('res', 'Resolution.')
+class Raster(config.Action):
     res = 20
     stl = None
     def run(self):
+        prefix = os.path.splitext(self.stl)[0]
         rast = raster(self.stl, self.res)
-        save(dict(res=self.res,raster=rast), self.prefix+'.raster')
+        save(dict(res=self.res,raster=rast), prefix+'.raster')
 
+@config.Positional('raster', '.raster input file')
+@config.String_flag('miller', 'Miller settings')
+class Path(config.Action):
+    raster = None
+    miller = 'wood-ball'
+    def run(self):
+        prefix = os.path.splitext(self.raster)[0]
+        data = load(self.raster)
 
-...
-class Path(config.Action_with_prefix):
-
-def do_cut(prefix, miller_name, filename):
-    data = load(filename)    
-    if isinstance(data['raster'], str):
-        data['raster'] = numpy.fromstring(data['raster'],data['dtype']).reshape(data['shape'])
-    
-    template = lambda: MILLERS[miller_name](res=data['res'])
-    miller = template()
-
-    height, width = data['raster'].shape
-    resrad = miller.res_bit_radius
-    for x,y,name in [
-        (resrad,resrad,'-near-left.prn'),
-        (width-1-resrad,resrad,'-near-right.prn'),
-        (resrad,height-1-resrad,'-far-left.prn'),
-        (width-1-resrad,height-1-resrad,'-far-right.prn'),
-        (width//2,height//2,'-middle.prn'),
-    ]:
+        template = lambda: MILLERS[self.miller](res=data['res'])
         miller = template()
-        miller.move_to((x,y,miller.res_tool_up), True)
-        miller.move_to((x,y,0), False)
-        miller.save_commands(prefix+name)
-
-    miller.cut_raster(data['raster'])
-    miller.save_commands(prefix+'-'+miller_name+'.prn')
-
+        
+        height, width = data['raster'].shape
+        resrad = miller.res_bit_radius
+        for x,y,name in [
+            (resrad,resrad,'-near-left.prn'),
+            (width-1-resrad,resrad,'-near-right.prn'),
+            (resrad,height-1-resrad,'-far-left.prn'),
+            (width-1-resrad,height-1-resrad,'-far-right.prn'),
+            (width//2,height//2,'-middle.prn'),
+            ]:
+            miller = template()
+            miller.move_to((x,y,miller.res_tool_up), True)
+            miller.move_to((x,y,0), False)
+            miller.save_commands(prefix+name)
+        
+        miller = template()
+        miller.cut_raster(data['raster'])
+        miller.save_commands(prefix+'-'+miller_name+'.prn')
+        
 
 if __name__ == '__main__':
-    args = sys.argv[1:]
-    command, args = args[0],args[1:]
-    if command == 'raster':
-        [prefix, res, stl] = args
-        res = int(res)
-        do_raster(prefix, res, stl)
-    
-    elif command == 'cut':
-        [prefix, miller, filename] = args
-        
-        do_cut(prefix, miller, filename)
-    
-    elif command == 'all':
-        miller = args[0]
-        assert miller in MILLERS
-        filenames = args[1:]
-        for filename in filenames:
-            assert filename.endswith('.stl')
-        for filename in filenames:
-            print filename
-            do_raster(filename[:-4], 20, filename)
-            do_cut(filename[:-4],miller,filename[:-4]+'.raster')
-    
-    elif command == 'view':
-        [filename] = args
-        data = load(filename)
-        if isinstance(data['raster'], str):
-            data['raster'] = numpy.fromstring(data['raster'],data['dtype']).reshape(data['shape'])
-        
-        im = data['raster'].astype('float')
-        
-        print float(im.shape[1])/data['res'],'x',float(im.shape[0])/data['res'],'x',-numpy.minimum.reduce(im.flat) / data['res'], 'mm'
-        
-        im -= numpy.minimum.reduce(im.flat)
-        im /= numpy.maximum.reduce(im.flat)
+    nesoni.run_toolbox([
+        Raster,
+        Path,
+        ], show_make_flags=False)
 
-        import cv
-        cim = cv.fromarray( numpy.tile(im[::-1,:,None].copy(),(1,1,3)) )
-        mat = cv.CreateMat(im.shape[0]//4, im.shape[1]//4, cv.CV_64FC3)
-        print cim.type, mat.type
-        cv.Resize(cim, mat)
-        cv.ShowImage('thing', mat)
-        cv.WaitKey()
-
-        #
-        #cim = cv.fromarray( numpy.tile(im[:,:,None],(1,1,3)) )
-        #
-        #for d in xrange(-10,-300,-2):
-        #    foo = data['raster'] <= d   
-        #    
-        #    print sum(foo.flat)
-        #    foo = erode(foo, 100)
-        #    print sum(foo.flat)
-        #    
-        #    c = contours(foo)
-        #    
-        #    for contour in c:
-        #        for i in xrange(len(contour)):
-        #            cv.Line(cim, contour[i],contour[(i+1)%len(contour)], (1,0,0))
-        #            flip = cv.fromarray(numpy.asarray(cim)[::-1].copy())
-        #        cv.ShowImage('thing', flip)
-        #        cv.WaitKey(10)
-            
-            #
-            #     
-            #storage = cv.CreateMemStorage()
-            #cont = cv.FindContours(cv.fromarray(foo.astype('uint8')),storage)
-            #approx = cv.ApproxPoly(cont,storage,cv.CV_POLY_APPROX_DP,1.0, 1)
-            #
-            ##print list(approx)
-            ##print dir(approx)
-            ##print approx.h_prev(),approx.h_next(),approx.v_prev(),approx.v_next()
-            #
-            ##cv.DrawContours(cim, cont, (0,0,1), (0,0,1), 0)
-            #cv.DrawContours(cim, approx, (1,0,0), (0,1,0), 0)
-            #
-            ##cv.DrawContours(cim, list(approx), (1,0,0),(0,1,0), 0)
-            #
-            ##for x,y in approx:
-            ##    cim[y,x] = (1,0,1)
-            #
-            #for x,y in cont:
-            #    #cim[y,x] = (0,0,1)
-            #    cv.Circle(cim, (x,y), 2, (0,0,1))
-            #
-            #    flip = cv.fromarray(numpy.asarray(cim)[::-1].copy())
-            #    cv.ShowImage('thing', flip)
-            #    cv.WaitKey(10)
-        cv.WaitKey()
-        
-    else:
-        assert False
-
+#
+#def do_cut(prefix, miller_name, filename):
+#    data = load(filename)    
+#    if isinstance(data['raster'], str):
+#        data['raster'] = numpy.fromstring(data['raster'],data['dtype']).reshape(data['shape'])
+#    
+#    template = lambda: MILLERS[miller_name](res=data['res'])
+#    miller = template()
+#
+#    height, width = data['raster'].shape
+#    resrad = miller.res_bit_radius
+#    for x,y,name in [
+#        (resrad,resrad,'-near-left.prn'),
+#        (width-1-resrad,resrad,'-near-right.prn'),
+#        (resrad,height-1-resrad,'-far-left.prn'),
+#        (width-1-resrad,height-1-resrad,'-far-right.prn'),
+#        (width//2,height//2,'-middle.prn'),
+#    ]:
+#        miller = template()
+#        miller.move_to((x,y,miller.res_tool_up), True)
+#        miller.move_to((x,y,0), False)
+#        miller.save_commands(prefix+name)
+#
+#    miller.cut_raster(data['raster'])
+#    miller.save_commands(prefix+'-'+miller_name+'.prn')
+#
+#
+#if __name__ == '__main__':
+#    args = sys.argv[1:]
+#    command, args = args[0],args[1:]
+#    if command == 'raster':
+#        [prefix, res, stl] = args
+#        res = int(res)
+#        do_raster(prefix, res, stl)
+#    
+#    elif command == 'cut':
+#        [prefix, miller, filename] = args
+#        
+#        do_cut(prefix, miller, filename)
+#    
+#    elif command == 'all':
+#        miller = args[0]
+#        assert miller in MILLERS
+#        filenames = args[1:]
+#        for filename in filenames:
+#            assert filename.endswith('.stl')
+#        for filename in filenames:
+#            print filename
+#            do_raster(filename[:-4], 20, filename)
+#            do_cut(filename[:-4],miller,filename[:-4]+'.raster')
+#    
+#    elif command == 'view':
+#        [filename] = args
+#        data = load(filename)
+#        if isinstance(data['raster'], str):
+#            data['raster'] = numpy.fromstring(data['raster'],data['dtype']).reshape(data['shape'])
+#        
+#        im = data['raster'].astype('float')
+#        
+#        print float(im.shape[1])/data['res'],'x',float(im.shape[0])/data['res'],'x',-numpy.minimum.reduce(im.flat) / data['res'], 'mm'
+#        
+#        im -= numpy.minimum.reduce(im.flat)
+#        im /= numpy.maximum.reduce(im.flat)
+#
+#        import cv
+#        cim = cv.fromarray( numpy.tile(im[::-1,:,None].copy(),(1,1,3)) )
+#        mat = cv.CreateMat(im.shape[0]//4, im.shape[1]//4, cv.CV_64FC3)
+#        print cim.type, mat.type
+#        cv.Resize(cim, mat)
+#        cv.ShowImage('thing', mat)
+#        cv.WaitKey()
+#
+#        #
+#        #cim = cv.fromarray( numpy.tile(im[:,:,None],(1,1,3)) )
+#        #
+#        #for d in xrange(-10,-300,-2):
+#        #    foo = data['raster'] <= d   
+#        #    
+#        #    print sum(foo.flat)
+#        #    foo = erode(foo, 100)
+#        #    print sum(foo.flat)
+#        #    
+#        #    c = contours(foo)
+#        #    
+#        #    for contour in c:
+#        #        for i in xrange(len(contour)):
+#        #            cv.Line(cim, contour[i],contour[(i+1)%len(contour)], (1,0,0))
+#        #            flip = cv.fromarray(numpy.asarray(cim)[::-1].copy())
+#        #        cv.ShowImage('thing', flip)
+#        #        cv.WaitKey(10)
+#            
+#            #
+#            #     
+#            #storage = cv.CreateMemStorage()
+#            #cont = cv.FindContours(cv.fromarray(foo.astype('uint8')),storage)
+#            #approx = cv.ApproxPoly(cont,storage,cv.CV_POLY_APPROX_DP,1.0, 1)
+#            #
+#            ##print list(approx)
+#            ##print dir(approx)
+#            ##print approx.h_prev(),approx.h_next(),approx.v_prev(),approx.v_next()
+#            #
+#            ##cv.DrawContours(cim, cont, (0,0,1), (0,0,1), 0)
+#            #cv.DrawContours(cim, approx, (1,0,0), (0,1,0), 0)
+#            #
+#            ##cv.DrawContours(cim, list(approx), (1,0,0),(0,1,0), 0)
+#            #
+#            ##for x,y in approx:
+#            ##    cim[y,x] = (1,0,1)
+#            #
+#            #for x,y in cont:
+#            #    #cim[y,x] = (0,0,1)
+#            #    cv.Circle(cim, (x,y), 2, (0,0,1))
+#            #
+#            #    flip = cv.fromarray(numpy.asarray(cim)[::-1].copy())
+#            #    cv.ShowImage('thing', flip)
+#            #    cv.WaitKey(10)
+#        cv.WaitKey()
+#        
+#    else:
+#        assert False
+#
 
