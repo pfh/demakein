@@ -268,7 +268,7 @@ class Make_whistle(make.Make_millable_instrument):
                     
                 cuts.append(spec.length)
                     
-                self.segment(cuts, true_length, up=True)
+                self.segment(cuts, up=True)
         
         else:
             mid1 = spec.hole_positions[2]*0.5+spec.hole_diameters[2]*0.5-spec.hole_diameters[3]*0.5+spec.hole_positions[3]*0.5

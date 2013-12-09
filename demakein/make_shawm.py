@@ -111,9 +111,9 @@ class Make_shawm(make.Make_millable_instrument):
             self.save(binst, 'baubled-instrument')
 
         if not self.mill:
-            self.segment([ cut1, cut3, cut5 ], length, up=True)
-            self.segment([ cut2, cut4 ], length, up=True)
-            self.segment([ cut3 ], length, up=True)
+            self.segment([ cut1, cut3, cut5 ], up=True)
+            self.segment([ cut2, cut4 ], up=True)
+            self.segment([ cut3 ], up=True)
         else:
             pack.cut_and_pack(
                 self.working.outside, self.working.bore,

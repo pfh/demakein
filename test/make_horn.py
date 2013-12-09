@@ -20,8 +20,9 @@ class Make_horn(make.Make_millable_instrument):
             with_fingerpad=[]
             )
         
-        l = spec.length
-        self.segment([l*0.333,l*0.666], spec.length, up=True)
+        self.make_parts(up=True)
+        #l = spec.length
+        #self.segment([l*0.333,l*0.666], spec.length, up=True)
 
 if __name__ == '__main__':
     nesoni.run_tool(Make_horn)

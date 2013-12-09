@@ -130,6 +130,27 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
     def save(self, shape, prefix):
         Make_base.save(self, shape, self.prefix+prefix)
 
+    def get_cuts(self):
+        length = self.working.top
+        spec = self.working.spec
+    
+        result = [ ]
+        for division in self.working.designer.divisions:
+            cuts = [ ]
+            for hole, above in division:
+                if hole >= 0:
+                    cut = spec.hole_positions[hole] + 2*spec.hole_diameters[hole]
+                else:
+                    cut = 0.0
+                cut += (length-cut)*above
+                cuts.append(cut)
+            result.append(cuts)
+        return result
+
+    def make_segments(self, up):
+        for item in self.get_cuts():
+            self.segment(item, up)
+
     def make_instrument(
              self,
              inner_profile, outer_profile, 
@@ -220,11 +241,13 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
         
         self.working.instrument = instrument
         self.working.outside = outside
-        self.working.bore = bore        
+        self.working.bore = bore
+        self.working.top = instrument.size()[2]        
         self.save(instrument, 'instrument')
 
-    def segment(self, cuts, length, up=False):
+    def segment(self, cuts, up=False):
         working = self.working
+        length = working.top
         remainder = working.instrument.copy()
         if self.thick_sockets:
             bore = self.working.bore
@@ -260,8 +283,12 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
             #p1 = cut-d4*0.4
             #p3 = cut+d4*0.4
             
-            p1 = cut-d4*0.8
+            sock_length = d4*0.8
+            p1 = cut-sock_length
             p3 = cut
+            if not up and self.join != 'weld':
+                p1 += sock_length
+                p3 += sock_length
             
             if self.thick_sockets:
                 d4_orig = d4
@@ -415,6 +442,7 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
             mask_lower.add(bump)
         
         return mask_lower, mask_upper
+
         
 @config.Bool_flag('mill', 'Create shapes for milling (rather than 3D printing).')
 @config.Float_flag('mill_diameter', 'Milling: Bit diameter for milling (affects gap size when packing pieces).')
@@ -428,6 +456,25 @@ class Make_millable_instrument(Make_instrument):
     mill_width = 130.0
     mill_thickness = 19.0
     
-
+    def make_parts(self, up):
+        if self.mill:
+            self.make_workpieces()
+        else:
+            self.make_segments(up)
+    
+    def make_workpieces(self):
+        length = self.working.top
+        cuts = sorted(set( item/length for scheme in self.get_cuts() for item in scheme ))
+        upper_segments, lower_segments = pack.plan_segments(cuts, self.mill_length / length)
+        pack.cut_and_pack(
+            self.working.outside, self.working.bore,
+            upper_segments, lower_segments,
+            xsize=self.mill_length, 
+            ysize=self.mill_width, 
+            zsize=self.mill_thickness,
+            bit_diameter=self.mill_diameter,
+            save=self.save,
+        )
+        
 
 
