@@ -139,17 +139,23 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
             cuts = [ ]
             for hole, above in division:
                 if hole >= 0:
-                    cut = spec.hole_positions[hole] + 2*spec.hole_diameters[hole]
+                    lower = spec.hole_positions[hole] + 2*spec.hole_diameters[hole]
                 else:
-                    cut = 0.0
-                cut += (length-cut)*above
+                    lower = 0.0
+                    
+                if hole < len(spec.hole_positions)-1:
+                    upper = spec.hole_positions[hole+1] - 2*spec.hole_diameters[hole]
+                else:
+                    upper = length
+                    
+                cut = lower + (upper-lower)*above
                 cuts.append(cut)
             result.append(cuts)
         return result
 
-    def make_segments(self, up):
+    def make_segments(self, up=False, flip_top=False):
         for item in self.get_cuts():
-            self.segment(item, up)
+            self.segment(item, up, flip_top)
 
     def make_instrument(
              self,
@@ -245,7 +251,7 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
         self.working.top = instrument.size()[2]        
         self.save(instrument, 'instrument')
 
-    def segment(self, cuts, up=False):
+    def segment(self, cuts, up=False, flip_top=False):
         working = self.working
         length = working.top
         remainder = working.instrument.copy()
@@ -321,7 +327,10 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
         shapes = shapes[::-1]
         
         for i, item in enumerate(shapes):
-            item.rotate(0,1,0, 180)
+            if (not flip_top) or \
+               (up and i != len(shapes)-1) or \
+               (not up and i != 0):               
+                item.rotate(0,1,0, 180)
             item.position_nicely()
             self.save(item, '%d-piece-%d' % (len(shapes),i+1))
         
@@ -456,11 +465,11 @@ class Make_millable_instrument(Make_instrument):
     mill_width = 130.0
     mill_thickness = 19.0
     
-    def make_parts(self, up):
+    def make_parts(self, up=False, flip_top=False):
         if self.mill:
             self.make_workpieces()
         else:
-            self.make_segments(up)
+            self.make_segments(up, flip_top)
     
     def make_workpieces(self):
         length = self.working.top

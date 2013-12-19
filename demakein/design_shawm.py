@@ -70,7 +70,8 @@ class Design_shawm(Shawm_designer):
     balance = [ 0.2, 0.1, 0.3, 0.3, 0.1, None ]
     #balance = [ 0.2, 0.1, None, None, 0.1, None ]
     hole_angles = [ -30.0, -30.0, -30.0, 30.0,  0.0, 0.0, 0.0, 0.0 ]
-
+    hole_horiz_angles = [ -20.0 ] + [ 0.0 ] * 6 + [ 180.0 ]
+    
     initial_length = design.wavelength('C4') * 0.4
 
     fingerings = [
@@ -120,6 +121,73 @@ class Design_shawm(Shawm_designer):
         #('C4*12', [1,1,1,1,1,1,1,1]),
     ]
 
+    divisions = [
+        [ (3,0.5) ],
+        ]
+
+
+#@config.help("""\
+#Design a shawm / haut-bois / oboe / bombard. Simple fingering system with compact hole placement.
+#""",
+#"""\
+#The flare at the end is purely decorative.
+#""")
+#class Design_folk_shawm(Shawm_designer):
+#    # Don't need thickness for cross fingerings, so may as well make wall thinner
+##    outer_add = True
+##    outer_diameters = bore_scaler([ 10.0, 8.0 ])
+#
+#    min_hole_diameters = bore_scaler([ 5.0 ] * 6)
+#    max_hole_diameters = bore_scaler([ 12.0 ] * 6)
+#    
+#    #initial_hole_diameter_fractions = inrange(0.5,0.0,6)    
+#    initial_hole_fractions = [ 0.5-0.06*i for i in range(5,-1,-1) ]
+#
+#    balance = [ 0.05, None, None, 0.05 ]
+#    hole_angles = [ -30.0, 30.0, 30.0, -30.0, 0.0, 30.0 ]
+#
+#    max_hole_spacing = design.scaler([ 32,32,None,32,32 ])
+#    
+#    initial_length = design.wavelength('D4') * 0.4
+#
+#    fingerings = [
+#        ('D4',  [1,1,1,1,1,1]),
+#        ('E4',  [0,1,1,1,1,1]),
+#        ('F#4', [0,0,1,1,1,1]),
+#        ('G4',  [0,0,0,1,1,1]),
+#        ('A4',  [0,0,0,0,1,1]),
+#        ('B4',  [0,0,0,0,0,1]),
+#        ('C5',  [0,0,0,1,1,0]),
+#        ('C#5', [0,0,0,0,0,0]),
+#        
+#        ('D5',  [1,1,1,1,1,1]),
+#        ('D5',  [1,1,1,1,1,0]),
+#
+#        ('E5',  [0,1,1,1,1,1]),
+#        #('E5',  [0,1,1,1,1,0]),
+#
+#        ('F#5', [0,0,1,1,1,1]),
+#        ('G5',  [0,0,0,1,1,1]),
+#        ('A5',  [0,0,0,0,1,1]),
+#        ('B5',  [0,0,0,0,0,1]),
+#        #('C#6', [0,0,0,0,0,0]),
+#        
+#        #More harmonics of basic horn
+#        ('D4*3',  [1,1,1,1,1,1]),
+#        ('D4*4',  [1,1,1,1,1,1]),
+#
+#        #('D4*5',  [1,1,1,1,1,1]),
+#        #('D4*6',  [1,1,1,1,1,1]),
+#        #('D4*7',  [1,1,1,1,1,1]),
+#        #('D4*8',  [1,1,1,1,1,1]),
+#        
+#        #('D4*9',  [1,1,1,1,1,1]),
+#        #('D4*10', [1,1,1,1,1,1]),
+#        #('D4*11', [1,1,1,1,1,1]),
+#        #('D4*12', [1,1,1,1,1,1]),
+#    ]    
+
+
 @config.help("""\
 Design a shawm / haut-bois / oboe / bombard. Simple fingering system with compact hole placement.
 """,
@@ -131,44 +199,48 @@ class Design_folk_shawm(Shawm_designer):
 #    outer_add = True
 #    outer_diameters = bore_scaler([ 10.0, 8.0 ])
 
-    min_hole_diameters = bore_scaler([ 5.0 ] * 6)
-    max_hole_diameters = bore_scaler([ 12.0 ] * 6)
+    min_hole_diameters = bore_scaler([ 3.0 ] * 7)
+    max_hole_diameters = bore_scaler([ 12.0 ] * 7)
     
     #initial_hole_diameter_fractions = inrange(0.5,0.0,6)    
-    initial_hole_fractions = [ 0.5-0.06*i for i in range(5,-1,-1) ]
+    initial_hole_fractions = [ 0.5-0.06*i for i in range(6,-1,-1) ]
 
-    balance = [ 0.05, None, None, 0.05 ]
-    hole_angles = [ -30.0, 30.0, 30.0, -30.0, 0.0, 30.0 ]
+    balance = [ 0.05, None, None, 0.05, None ]
+    #hole_angles = [ -30.0, 30.0, 30.0, -30.0, 0.0, 30.0, 0.0 ]
+    hole_angles = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
 
-    max_hole_spacing = design.scaler([ 32,32,None,32,32 ])
+    hole_horiz_angles = [ -5.0, 0.0, 0.0,  5.0, 0.0, 0.0 ] + [ 180.0 ]
+
+#    max_hole_spacing = design.scaler([ 32,32,None,32,32, None ])
+    max_hole_spacing = design.scaler([ 28,28,None,28,28, None ])
     
     initial_length = design.wavelength('D4') * 0.4
 
     fingerings = [
-        ('D4',  [1,1,1,1,1,1]),
-        ('E4',  [0,1,1,1,1,1]),
-        ('F#4', [0,0,1,1,1,1]),
-        ('G4',  [0,0,0,1,1,1]),
-        ('A4',  [0,0,0,0,1,1]),
-        ('B4',  [0,0,0,0,0,1]),
-        ('C5',  [0,0,0,1,1,0]),
-        ('C#5', [0,0,0,0,0,0]),
+        ('D4',  [1,1,1,1,1,1, 1]),
+        ('E4',  [0,1,1,1,1,1, 1]),
+        ('F#4', [0,0,1,1,1,1, 1]),
+        ('G4',  [0,0,0,1,1,1, 1]),
+        ('A4',  [0,0,0,0,1,1, 1]),
+        ('B4',  [0,0,0,0,0,1, 1]),
+        ('C5',  [0,0,0,1,1,0, 1]),
+        ('C#5', [0,0,0,0,0,0, 1]),
         
-        ('D5',  [1,1,1,1,1,1]),
-        ('D5',  [1,1,1,1,1,0]),
+        #('D5',  [1,1,1,1,1,1, 1]),
+        ('D5',  [1,1,1,1,1,1, 0]),
 
-        ('E5',  [0,1,1,1,1,1]),
+        ('E5',  [0,1,1,1,1,1, 0]),
         #('E5',  [0,1,1,1,1,0]),
 
-        ('F#5', [0,0,1,1,1,1]),
-        ('G5',  [0,0,0,1,1,1]),
-        ('A5',  [0,0,0,0,1,1]),
-        ('B5',  [0,0,0,0,0,1]),
-        #('C#6', [0,0,0,0,0,0]),
+        ('F#5', [0,0,1,1,1,1, 0]),
+        ('G5',  [0,0,0,1,1,1, 0]),
+        ('A5',  [0,0,0,0,1,1, 0]),
+        ('B5',  [0,0,0,0,0,1, 0]),
+        #('C#6', [0,0,0,0,0,0, 0]),
         
         #More harmonics of basic horn
-        ('D4*3',  [1,1,1,1,1,1]),
-        ('D4*4',  [1,1,1,1,1,1]),
+      #  ('D4*3',  [1,1,1,1,1,1]),
+      #  ('D4*4',  [1,1,1,1,1,1]),
 
         #('D4*5',  [1,1,1,1,1,1]),
         #('D4*6',  [1,1,1,1,1,1]),
@@ -179,7 +251,13 @@ class Design_folk_shawm(Shawm_designer):
         #('D4*10', [1,1,1,1,1,1]),
         #('D4*11', [1,1,1,1,1,1]),
         #('D4*12', [1,1,1,1,1,1]),
-    ]    
-
+    ]   
+    
+    divisions = [
+        [ (2,0.5) ],
+        [ (-1,0.9), (6,0.0) ],
+        [ (-1,0.9), (2,0.5), (6,0.0) ],
+        [ (-1,0.45), (-1,0.9), (2,0.0), (2,0.9), (6,0.0), (6,0.5) ],
+        ] 
 
 

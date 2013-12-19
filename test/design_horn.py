@@ -35,8 +35,9 @@ class Design_horn(demakein.design.Instrument_designer):
         ]
     
     divisions = [
-        [(-1,0.333),(-1,0.6666)],
-        [(-1,0.25),(-1,0.5),(-1,0.75)],
+        #[(-1,0.333),(-1,0.6666)],
+        #[(-1,0.25),(-1,0.5),(-1,0.75)],
+        [(-1,i/8.0) for i in xrange(1,8) ],
         ]
 
 if __name__ == '__main__': 

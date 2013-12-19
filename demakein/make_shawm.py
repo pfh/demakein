@@ -46,12 +46,12 @@ class Make_shawm(make.Make_millable_instrument):
             print 'Bauble dock: %.1fmm diameter, %.1fmm length' % (m, end_dock_length)
             bauble = make_bauble.Make_bauble(self.working_dir,dock_length=end_dock_length,dock_diameter=m).run()
         else:
-            end_dock_length = m * 0.05
-        fixer = profile.make_profile([(end_dock_length,m),(end_dock_length,m),(end_dock_length+m*0.333,0.0)])
+            end_dock_length = m * 0.03
+        fixer = profile.make_profile([(0.0,m),(end_dock_length,m),(end_dock_length*2,0.0)])
         outer_profile = outer_profile.max_with(fixer)
         
         dock_diam = self.working.designer.bore * 4.0
-        dock_length = 10.0
+        dock_length = 20.0
         fixer = profile.make_profile([(length-dock_length*1.25,0.0),(length-dock_length,dock_diam)])
         outer_profile = outer_profile.max_with(fixer)
         
@@ -61,30 +61,31 @@ class Make_shawm(make.Make_millable_instrument):
             outer_profile = make.decorate(outer_profile, length-dock_length*1.25, -1.0, 0.15)
         
         n_holes = self.working.designer.n_holes
-        if n_holes == 6:
-            hole_horiz_angles = [ 0.0 ] * 6
-            cut2 = spec.inner_hole_positions[0]*0.5+spec.inner_hole_positions[1]*0.5
-            cut3 = spec.inner_hole_positions[2]*0.5+spec.inner_hole_positions[3]*0.5
-            cut4 = spec.inner_hole_positions[5]*1.3-spec.inner_hole_positions[4]*0.3
-
-            cut1a = spec.hole_positions[0]
-            cut1a -= outer_profile(cut1a)*0.5
-            cut1b = (cut2+outer_profile(cut2)*0.25) * 0.5
-            cut1 = min(cut1a,cut1b)
-
-        else:
-            hole_horiz_angles = [ -20.0 ] + [ 0.0 ] * 6 + [ 180.0 ]
-            cut1 = spec.hole_positions[0]*0.5+spec.hole_positions[1] * 0.5        
-
-            cut2 = spec.inner_hole_positions[2]*0.5+spec.inner_hole_positions[3] * 0.5
-            cut3 = spec.inner_hole_positions[3]*0.5+spec.inner_hole_positions[4] * 0.5
-            cut4 = spec.inner_hole_positions[4]*0.5+spec.inner_hole_positions[5] * 0.5
         
-        cut5a = spec.hole_positions[-1]
-        cut5a += outer_profile(cut5a)*0.5        
-        cut5b = length*0.5+cut3*0.5
-        cut5b -= outer_profile(cut5b)*0.25
-        cut5 = max(cut5a, cut5b)
+        #if n_holes == 6:
+        #    #hole_horiz_angles = [ 0.0 ] * 6
+        #    cut2 = spec.inner_hole_positions[0]*0.5+spec.inner_hole_positions[1]*0.5
+        #    cut3 = spec.inner_hole_positions[2]*0.5+spec.inner_hole_positions[3]*0.5
+        #    cut4 = spec.inner_hole_positions[5]*1.3-spec.inner_hole_positions[4]*0.3
+        #
+        #    cut1a = spec.hole_positions[0]
+        #    cut1a -= outer_profile(cut1a)*0.5
+        #    cut1b = (cut2+outer_profile(cut2)*0.25) * 0.5
+        #    cut1 = min(cut1a,cut1b)
+        #
+        #else:
+        #    #hole_horiz_angles = [ -20.0 ] + [ 0.0 ] * 6 + [ 180.0 ]
+        #    cut1 = spec.hole_positions[0]*0.5+spec.hole_positions[1] * 0.5        
+        #
+        #    cut2 = spec.inner_hole_positions[2]*0.5+spec.inner_hole_positions[3] * 0.5
+        #    cut3 = spec.inner_hole_positions[3]*0.5+spec.inner_hole_positions[4] * 0.5
+        #    cut4 = spec.inner_hole_positions[4]*0.5+spec.inner_hole_positions[5] * 0.5
+        #
+        #cut5a = spec.hole_positions[-1]
+        #cut5a += outer_profile(cut5a)*0.5        
+        #cut5b = length*0.5+cut3*0.5
+        #cut5b -= outer_profile(cut5b)*0.25
+        #cut5 = max(cut5a, cut5b)
 
         if self.mill:
             cut0 = cut1*0.5
@@ -97,7 +98,7 @@ class Make_shawm(make.Make_millable_instrument):
             hole_positions=spec.hole_positions,
             hole_diameters=spec.hole_diameters,
             hole_vert_angles=spec.hole_angles,
-            hole_horiz_angles=hole_horiz_angles,
+            hole_horiz_angles=self.working.designer.hole_horiz_angles,
             xpad = [ 0.0 ] * n_holes,
             ypad = [ 0.0 ] * n_holes,
             with_fingerpad = [ True ] * n_holes,
@@ -110,20 +111,23 @@ class Make_shawm(make.Make_millable_instrument):
             binst.add(bauble)
             self.save(binst, 'baubled-instrument')
 
-        if not self.mill:
-            self.segment([ cut1, cut3, cut5 ], up=True)
-            self.segment([ cut2, cut4 ], up=True)
-            self.segment([ cut3 ], up=True)
-        else:
-            pack.cut_and_pack(
-                self.working.outside, self.working.bore,
-                upper_segments, lower_segments,
-                xsize=self.mill_length, 
-                ysize=self.mill_width, 
-                zsize=self.mill_thickness,
-                bit_diameter=self.mill_diameter,
-                save=self.save,
-            )
+        self.make_parts(up = True)
+        
+
+        #if not self.mill:
+        #    self.segment([ cut1, cut3, cut5 ], up=True)
+        #    self.segment([ cut2, cut4 ], up=True)
+        #    self.segment([ cut3 ], up=True)
+        #else:
+        #    pack.cut_and_pack(
+        #        self.working.outside, self.working.bore,
+        #        upper_segments, lower_segments,
+        #        xsize=self.mill_length, 
+        #        ysize=self.mill_width, 
+        #        zsize=self.mill_thickness,
+        #        bit_diameter=self.mill_diameter,
+        #        save=self.save,
+        #    )
         
         #self.working.instrument.rotate(0,1,0, 180)
         #self.working.instrument.move(0,0,length)

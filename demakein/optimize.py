@@ -68,7 +68,7 @@ def make_update(vecs, initial_accuracy, do_noise):
     return update
 
 
-def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial_accuracy=0.01, monitor = lambda x,y: None):
+def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial_accuracy=0.001, monitor = lambda x,y: None):
     pool_size = legion.coordinator().get_cores()
     
     worker_futs = [ legion.coordinator().new_future() for i in xrange(pool_size) ]

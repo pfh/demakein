@@ -282,7 +282,7 @@ def unmill(rast, mill_points):
     
     result = rast.copy()
     
-    mill_points = sorted(mill_points, key=lambda item:-item[2])
+    mill_points = sorted(mill_points, key=lambda item:item[1])
     
     for y in xrange(sy):
         row = result[y]
@@ -320,6 +320,10 @@ class Miller(config.Configurable):
     z_speed = 3.0
     movement_speed = 15.0
     
+    # Home z axis occasionally
+    tool_zreset = 60.0
+    zreset_per = 10
+    
     bit_radius = 1.5
     bit_ball = False
     
@@ -330,6 +334,9 @@ class Miller(config.Configurable):
     
     @property
     def res_tool_up(self): return int(self.res * self.tool_up + 0.5)
+
+    @property
+    def res_tool_zreset(self): return int(self.res * self.tool_zreset + 0.5)
 
     @property
     def res_cutting_depth(self): return int(self.res * self.cutting_depth + 0.5)
@@ -356,6 +363,7 @@ class Miller(config.Configurable):
         self.path = [ ] 
         
         self.drill_points = [ ]
+        self.cut_count = 0 #For z reset
 
     def move_to(self, point, fast=False):
         self.path.append((point, fast))
@@ -363,25 +371,47 @@ class Miller(config.Configurable):
     def cut_contour(self, z, points, is_exterior, point_score=lambda x,y,z:1):
         """ z and points at res scale """
         
-        # Drill as far from previous drill points as possible
-        # TODO: drilling in the middle of lines
-        best = 0
-        best_point = points[0]
-        best_score = 1e30
-        for i in xrange(len(points)):
-            j = (i+1)%len(points)
-            for x1,y1 in line_points2(points[i][0],points[i][1],points[j][0],points[j][1]):
-                score = sum( ((x1-x2)**2+(y1-y2)**2+1)**-1.0 for j,(x2,y2) in enumerate(self.drill_points) )
-                score *= point_score(x1,y1,z)
-                if score < best_score:
-                    best = j
-                    best_point = x1,y1
-                    best_score = score
-        
-        points = [ best_point ] + points[best:] + points[:best]
-        
         if is_exterior:
+            # Drill as far from previous drill points as possible
+            best = 0
+            best_point = points[0]
+            best_score = 1e30
+            for i in xrange(len(points)):
+                j = (i+1)%len(points)
+                for x1,y1 in line_points2(points[i][0],points[i][1],points[j][0],points[j][1]):
+                    score = sum( ((x1-x2)**2+(y1-y2)**2+1)**-1.0 for j,(x2,y2) in enumerate(self.drill_points) )
+                    score *= point_score(x1,y1,z)
+                    if score < best_score:
+                        best = j
+                        best_point = x1,y1
+                        best_score = score
+            
+            points = [ best_point ] + points[best:] + points[:best]
             self.drill_points.append(points[0])
+            
+        elif self.path:
+            # Move as little as possible
+            last = self.path[-1][0]
+        
+            best = 0
+            best_point = points[0]
+            best_score = 1e30
+            for i in xrange(len(points)):
+                j = (i+1)%len(points)
+                for x1,y1 in line_points2(points[i][0],points[i][1],points[j][0],points[j][1]):
+                    score = (last[0]-x1)**2 + (last[1]-y1)**2
+                    if score < best_score:
+                        best = j
+                        best_point = x1,y1
+                        best_score = score
+            
+            points = [ best_point ] + points[best:] + points[:best]
+
+        # Home z axis occasionally
+        self.cut_count += 1
+        if self.cut_count % self.zreset_per == 0 and self.path:
+            last = self.path[-1][0]
+            self.move_to( ((points[0][0]+last[0])//2, (points[0][1]+last[1])//2, self.res_tool_zreset), True ) 
         
         self.move_to( (points[0][0],points[0][1],self.res_tool_up), True )
         self.move_to( (points[0][0],points[0][1],max(0,z+self.res_tool_up)), True )
@@ -389,6 +419,7 @@ class Miller(config.Configurable):
         for x,y in points:
             self.move_to( (x,y,z), False )
         self.move_to( (points[0][0],points[0][1],z), False )
+        
         
         self.move_to( (points[0][0],points[0][1],self.res_tool_up), True )
 
@@ -586,6 +617,7 @@ class Raster(config.Action):
         rast = raster(self.stl, self.res)
         save(dict(res=self.res,raster=rast), prefix+'.raster')
 
+
 @config.Positional('raster', '.raster input file')
 @config.String_flag('miller', 'Miller settings')
 class Path(config.Action):
@@ -614,13 +646,29 @@ class Path(config.Action):
         
         miller = template()
         miller.cut_raster(data['raster'])
-        miller.save_commands(prefix+'-'+miller_name+'.prn')
-        
+        miller.save_commands(prefix+'-'+self.miller+'.prn')
+
+
+@config.Main_section('stls', 'STL files.', empty_is_ok=False)
+@config.Configurable_section('raster', 'raster: parameters')
+@config.Configurable_section('path', 'path: parameters')
+class All(config.Action):
+    stls = [ ]
+    raster = Raster()
+    path = Path()
+    
+    def run(self):
+        for filename in self.stls:
+            prefix = os.path.splitext(filename)[0]
+            self.raster(filename).run()
+            self.path(prefix+'.raster').run()
+
 
 if __name__ == '__main__':
     nesoni.run_toolbox([
         Raster,
         Path,
+        All,
         ], show_make_flags=False)
 
 #

@@ -20,7 +20,7 @@ class Make_horn(make.Make_millable_instrument):
             with_fingerpad=[]
             )
         
-        self.make_parts(up=True)
+        self.make_parts(up=True, flip_top=True)
         #l = spec.length
         #self.segment([l*0.333,l*0.666], spec.length, up=True)
 
