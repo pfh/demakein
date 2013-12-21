@@ -658,10 +658,14 @@ class All(config.Action):
     path = Path()
     
     def run(self):
-        for filename in self.stls:
-            prefix = os.path.splitext(filename)[0]
-            self.raster(filename).run()
-            self.path(prefix+'.raster').run()
+        with nesoni.Stage() as stage:
+            for filename in self.stls:
+                 stage.process(self.do_one, filename)    
+    
+    def do_one(self, filename):
+        prefix = os.path.splitext(filename)[0]
+        self.raster(filename).run()
+        self.path(prefix+'.raster').run()
 
 
 if __name__ == '__main__':
