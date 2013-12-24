@@ -33,7 +33,7 @@ def shift(commands, x,y):
         result.append('Z%d,%d,%d' % tuple(pos))
     return result
 
-def execute(commands, port_name):
+def execute(commands, port_name,  start=0):
     port = serial.Serial(
         port = port_name,
         baudrate = 9600,
@@ -41,7 +41,10 @@ def execute(commands, port_name):
     )
     
     start = time.time()
-    for i, command in enumerate(commands):
+    #for i, command in enumerate(commands):
+    for i in xrange(start,len(commands)):
+        command = commands[i]
+    
         char = port.read(1)
         if char:
            sys.stdout.write('\nRead: ')
@@ -81,11 +84,13 @@ def execute(commands, port_name):
 @config.String_flag('port')
 @config.Float_flag('x', 'X offset')
 @config.Float_flag('y', 'Y offset')
+@config.Float_flag('percent', 'Start from percent-done')
 class Send(config.Action):
     filename = None
     port = '/dev/ttyUSB0'
     x = 0.0
     y = 0.0
+    percent = 0.0
 
     def run(self):
         commands = open(self.filename,'rb').read().strip().rstrip(';').split(';')
@@ -93,19 +98,36 @@ class Send(config.Action):
         
         print len(commands), 'commands'
     
-        body_start_1 = commands.index('!MC1')
-        body_start = body_start_1+2
+        body_start = commands.index('!MC1') + 1
     
         body_end = body_start
         while body_end < len(commands) and commands[body_end][:1] != '!':
             body_end += 1
     
-        commands = (
-            commands[:body_start_1] + 
-            shift(commands[body_start_1:], int(self.x*40),int(self.y*40)) 
-            )
+        #commands = (
+        #    commands[:body_start_1] + 
+        #    shift(commands[body_start_1:], int(self.x*40),int(self.y*40)) 
+        #    )
         
-        execute(commands, self.port)
+        start = body_start + int(self.percent/100.0*(body_end-body_start))
+        
+        while True:
+            if start == body_start: break
+            if commands[start].startswith('Z'):
+                pos = map(int,item[1:].split(','))
+                if pos[2] >= 2420:
+                    break
+            start -= 1
+        
+        print 'commands  ', len(commands)
+        print 'body_start', body_start
+        print 'start     ', start
+        print 'body_end  ', body_end
+        
+        execute(commands[:body_start], self.port)
+        
+        execute(shift(commands[body_start:],int(self.x*40),int(self.y*40)), 
+                self.port, start-body_start)
 
 
 
