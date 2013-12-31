@@ -1,4 +1,7 @@
 
+0.14 - Fix optimizer bug -- could halt early.
+       Refinements to folk whistle.
+
 0.13 - Refinements to flutes.
 
 0.12 - Added more example scripts.

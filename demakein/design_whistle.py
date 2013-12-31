@@ -77,34 +77,40 @@ Design a whistle with pennywhistle fingering.
 class Design_folk_whistle(Design_whistle):    
     divisions = [
         [(5,0)],
-        [(0,0),(5,0)],
+        [(1,0),(5,0)],
         [(1,0),(5,0),(5,0.5)],
         ]
     
     initial_length = design.wavelength('D4') * 0.5
     
     min_hole_diameters = design.bore_scaler([ 3.0 ]*6)
-    max_hole_diameters = design.bore_scaler([ 13.0 ]*6)
+    max_hole_diameters = design.bore_scaler([ 12.0 ]*6)
     
     horiz_angles = [ 0.0 ] * 6
-    mid_cut = 3
+    #mid_cut = 3
 
     #balance = [ 0.05, 0.05, 0.05, 0.05 ]
-    balance = [ 0.2 ]*4
-    @property
-    def min_hole_spacing(self):
-        b = self.inner_diameters[-1]
-        return [ b*1.15 ] * 5 #[ b,b,b*1.25,b,b ]
+    balance = [ 0.05, None,None, 0.05 ]
+    
+    min_hole_spacing = design.scaler([ None, None, 35.0, None, None ])
+    max_hole_spacing = design.sqrt_scaler([ 35.0, 35.0, None, 35.0, 35.0 ])
+    
+    #min_hole_spacing = [ 12.0 ] * 5
+    #@property
+    #def min_hole_spacing(self):
+    #    b = self.inner_diameters[-1]
+    #    return [ b*1.15 ] * 5 #[ b,b,b*1.25,b,b ]
 
-    inner_diameters = design.bore_scaler([ 24.0, 20.0, 20.0, 22.0, 20.0, 20.0 ])
-    initial_inner_fractions = [ 0.2, 0.6,0.65,0.7 ]
-    min_inner_fraction_sep = [ 0.02 ] * 5
+    inner_diameters = design.bore_scaler([ 14.0, 14.0, 20.0, 22.0, 22.0, 20.0, 20.0 ])
+    initial_inner_fractions = [ 0.2, 0.6,0.65,0.7,0.75 ]
+    min_inner_fraction_sep = [ 0.01, 0.5 ] + [ 0.01 ] * 4
 
 #    outer_diameters = design.bore_scaler([ 38.0, 28.0, 28.0 ])    
 #    initial_outer_fractions = [ 0.15 ]
 #    min_outer_fraction_sep = [ 0.15, 0.8 ]
 
     outer_diameters = design.bore_scaler([ 40.0, 28.0, 28.0, 32.0, 32.0 ])    
+    outer_angles = [ -15.0, (0.0,None), None, None, None ]
     initial_outer_fractions = [ 0.15, 0.5, 0.85 ]
     min_outer_fraction_sep = [ 0.15, 0.3, 0.35, 0.15 ]
     

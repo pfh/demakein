@@ -64,7 +64,7 @@ def make_update(vecs, initial_accuracy, do_noise):
             val+random.normalvariate(0.0, extra) 
             for val in update 
             ]
-    
+
     return update
 
 
@@ -153,7 +153,7 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
                     best_score = new_score
                     best = new
             
-            if not best_score[0]:
+            if len(currents) >= pool_size and best_score[0] == 0.0:
                 xspan = 0.0
                 for i in xrange(len(start_x)):
                     xspan = max(xspan,
