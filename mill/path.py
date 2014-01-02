@@ -328,9 +328,9 @@ class Miller(config.Configurable):
     bit_ball = False
     
     cutting_depth = 0.1
+    cutting_rate = 3.0 #Step-in in bit radii, larger = faster cutting
     finishing_clearance = 0.0
     finish = True
-    finishing_step = 0.1
     
     @property
     def res_tool_up(self): return int(self.res * self.tool_up + 0.5)
@@ -345,10 +345,11 @@ class Miller(config.Configurable):
     def res_finishing_clearance(self): return self.res * self.finishing_clearance
 
     @property
-    def res_finishing_step(self): return max(1,int(self.res * self.finishing_step + 0.5))
-
-    @property
     def res_bit_radius(self): return self.res * self.bit_radius
+    
+    @property
+    def res_cutting_step(self):
+        return int(self.res * self.bit_radius * self.cutting_rate)
     
     @property
     def res_horizontal_step(self):
@@ -478,7 +479,6 @@ class Miller(config.Configurable):
         spin = 0.0
         
         cut_z = 0
-        finish_z = cut_z
         min_z = numpy.minimum.reduce(raster.flatten())         
         while True:
             cut_z -= self.res_cutting_depth
@@ -490,19 +490,15 @@ class Miller(config.Configurable):
                             #out_first=self.res_bit_radius/3.0, 
                             #in_step  =self.res_bit_radius,
                             #out_step =self.res_bit_radius/3.0,
-                            in_first  = self.res_finishing_clearance + self.res_bit_radius*2*spin,
+                            in_first  = self.res_finishing_clearance + self.res_cutting_step*spin,
                             out_first = 0.0,
-                            in_step   = self.res_bit_radius*2.0,
+                            in_step   = self.res_cutting_step,
                             out_step  = 0.0,
                             point_score=point_score)
             
-            while finish_z-self.res_finishing_step >= cut_z: 
-                finish_z -= self.res_finishing_step
-                
-                if not self.finish: continue
-                
-                infinish_mask = inraster <= finish_z                 
-                infinish_mask_lower = inraster <= (finish_z-self.res_finishing_step)
+            if self.finish:
+                infinish_mask = inraster <= cut_z                 
+                infinish_mask_lower = inraster <= (cut_z-self.res_cutting_depth)
                 self.cut_inmask(finish_z, 
                                 infinish_mask & ~infinish_mask_lower, #erode(infinish_mask_lower,self.res_horizontal_step * 1.5), 
                                 in_first =self.res_horizontal_step*2,
@@ -512,9 +508,9 @@ class Miller(config.Configurable):
                                 point_score=point_score,
                                 down_cut=False
                                 )
-                self.cut_inmask(finish_z, infinish_mask, down_cut=False)
+                self.cut_inmask(cut_z, infinish_mask, down_cut=False)
             
-            if finish_z <= min_z: 
+            if cut_z <= min_z: 
                 break
             
             spin = (spin-GOLDEN)%1.0
@@ -573,10 +569,9 @@ class Fast(Miller):
     z_speed = 3.0
     movement_speed = 15.0
     
-    cutting_depth = 0.3
+    cutting_rate = 6.0
     finishing_clearance = 0.5
     finish = True
-    finishing_step = 0.1
 
 
 class Cork(Miller):
