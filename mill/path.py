@@ -7,7 +7,7 @@ except:
     import numpypy as numpy
 
 import nesoni
-from nesoni import config
+from nesoni import config, grace
 
 
 def begin_commands(x,y):
@@ -286,13 +286,11 @@ def unmill(rast, mill_points):
     
     for y in xrange(sy):
         row = result[y]
-        sys.stdout.write('\r%d ' % (sy-y))
-        sys.stdout.flush()
+        grace.status('%d' % (sy-y))
         for ox,oy,oheight in mill_points:
             numpy.maximum(row,padded[pady+y-oy,padx-ox:padx+sx-ox]-oheight,row)
     
-    sys.stdout.write('\r \r')
-    sys.stdout.flush()
+    grace.status('')
     
     #old_height = 0
     #for x,y,height in sorted(mill_points, key=lambda item:item[2]):
@@ -482,8 +480,7 @@ class Miller(config.Configurable):
         min_z = numpy.minimum.reduce(raster.flatten())         
         while True:
             cut_z -= self.res_cutting_depth
-            sys.stdout.write('\r%d %d  %f' % (cut_z, min_z, spin))
-            sys.stdout.flush()
+            grace.status('%d %d  %f' % (cut_z, min_z, spin))
             inmask = inraster <= cut_z
             self.cut_inmask(cut_z, inmask, 
                             #in_first =self.res_bit_radius/3.0+self.res_finishing_clearance,
@@ -499,7 +496,7 @@ class Miller(config.Configurable):
             if self.finish:
                 infinish_mask = inraster <= cut_z                 
                 infinish_mask_lower = inraster <= (cut_z-self.res_cutting_depth)
-                self.cut_inmask(finish_z, 
+                self.cut_inmask(cut_z, 
                                 infinish_mask & ~infinish_mask_lower, #erode(infinish_mask_lower,self.res_horizontal_step * 1.5), 
                                 in_first =self.res_horizontal_step*2,
                                 out_first=self.res_horizontal_step,
@@ -514,7 +511,7 @@ class Miller(config.Configurable):
                 break
             
             spin = (spin-GOLDEN)%1.0
-        print
+        grace.status('')
     
     def get_commands(self):
         speed_ratio_z = self.x_speed / self.z_speed
