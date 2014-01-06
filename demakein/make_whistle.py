@@ -209,6 +209,10 @@ class Make_whistle_head(make.Make):
 Produce 3D models using the output of "demakein design-*-whistle:".
 """)
 class Make_whistle(make.Make_millable_instrument):
+    def get_cuts(self):
+        cuts = super(Make_whistle,self).get_cuts()
+        return [ item + [ self.working.spec.length ] for item in cuts ]
+    
     def run(self):
         working = self.working
         designer = working.designer
@@ -234,79 +238,81 @@ class Make_whistle(make.Make_millable_instrument):
              hole_diameters = spec.hole_diameters,
              hole_vert_angles = spec.hole_angles,
              hole_horiz_angles = designer.horiz_angles,
-             xpad = [0.0]*n_holes,
-             ypad = [0.0]*n_holes,
-             with_fingerpad = [True]*n_holes,
+             xpad = [designer.xpad]*n_holes,
+             ypad = [designer.ypad]*n_holes,
+             with_fingerpad = [ True ]*n_holes,
              outside_extras = [ whistle_outer ],
              bore_extras = [ whistle_inner ],
              )
         
-        true_length = self.working.instrument.extent().zmax
+        self.make_parts(up = True)
 
-        #cut0 = spec.hole_positions[0] + spec.hole_diameters[0]*0.75
-        #cut0 += spec.inner(cut0)*0.5
-        #cut1 = spec.hole_positions[designer.mid_cut] + spec.hole_diameters[designer.mid_cut]*0.75
-        #cut1 += spec.inner(cut1)*0.5
-        #cut2 = spec.hole_positions[-1] + spec.hole_diameters[-1]*0.75
-        #cut2 += spec.inner(cut2)*0.5
-        #cut2 = max(cut2, true_length*0.5)
-        ##cut3 = true_length * 0.7
-        #cut3 = cut1 + (true_length-cut1)*0.5 
-           
-        if not self.mill:
-            #self.segment([ cut2 ], spec.length, up=True)
-            #self.segment([ cut1, cut2 ], spec.length, up=True)
-            #self.segment([ cut0, cut1, cut3 ], spec.length, up=True)
-        
-            for division in designer.divisions:
-                cuts = [ ]
-                for hole, above in division:
-                    cut = spec.hole_positions[hole] + spec.hole_diameters[hole]*0.75
-                    #cut += spec.outer(cut)*0.5
-                    cut += (true_length-cut)*above
-                    cuts.append(cut)
-                    
-                cuts.append(spec.length)
-                    
-                self.segment(cuts, up=True)
-        
-        else:
-            mid1 = spec.hole_positions[2]*0.5+spec.hole_diameters[2]*0.5-spec.hole_diameters[3]*0.5+spec.hole_positions[3]*0.5
-            mid2 = spec.hole_positions[5]+spec.hole_diameters[5]
-        
-            upper_segments, lower_segments = pack.plan_segments([mid1/true_length,mid2/true_length], self.mill_length / true_length)
-            
-            whistle_jaw = whistle_jaw_clipper.copy()
-            whistle_jaw.clip(self.working.outside)
-            whistle_jaw.remove(self.working.bore)
-            #whistle_jaw_space = whistle_jaw_clipper.copy()
-            #whistle_jaw_space.clip(self.working.bore)
-            whistle_jaw_space = self.working.bore.copy()
-            
-            whistle_jaw.rotate(1,0,0, 90)
-            whistle_jaw_space.rotate(1,0,0, 90)
-            
-            offset = -whistle_jaw.extent().zmin
-            whistle_jaw.move(0,0,offset)
-            whistle_jaw_space.move(0,0,offset)
-            
-            self.save(whistle_jaw, 'jaw')
-            jaw_packable = [ pack.Packable([ whistle_jaw, whistle_jaw_space ], 90, self.mill_diameter) ]
-
-            self.working.bore.add(whistle_jaw_clipper)
-            self.working.outside.remove(whistle_jaw_clipper)
-                        
-            pack.cut_and_pack(
-                self.working.outside, self.working.bore,
-                upper_segments, lower_segments,
-                xsize=self.mill_length, 
-                ysize=self.mill_width, 
-                zsize=self.mill_thickness,
-                bit_diameter=self.mill_diameter,
-                save=self.save,
-                
-                extra_packables=[ jaw_packable ],
-            )
+        #true_length = self.working.instrument.extent().zmax
+        #
+        ##cut0 = spec.hole_positions[0] + spec.hole_diameters[0]*0.75
+        ##cut0 += spec.inner(cut0)*0.5
+        ##cut1 = spec.hole_positions[designer.mid_cut] + spec.hole_diameters[designer.mid_cut]*0.75
+        ##cut1 += spec.inner(cut1)*0.5
+        ##cut2 = spec.hole_positions[-1] + spec.hole_diameters[-1]*0.75
+        ##cut2 += spec.inner(cut2)*0.5
+        ##cut2 = max(cut2, true_length*0.5)
+        ###cut3 = true_length * 0.7
+        ##cut3 = cut1 + (true_length-cut1)*0.5 
+        #   
+        #if not self.mill:
+        #    #self.segment([ cut2 ], spec.length, up=True)
+        #    #self.segment([ cut1, cut2 ], spec.length, up=True)
+        #    #self.segment([ cut0, cut1, cut3 ], spec.length, up=True)
+        #
+        #    for division in designer.divisions:
+        #        cuts = [ ]
+        #        for hole, above in division:
+        #            cut = spec.hole_positions[hole] + spec.hole_diameters[hole]*0.75
+        #            #cut += spec.outer(cut)*0.5
+        #            cut += (true_length-cut)*above
+        #            cuts.append(cut)
+        #            
+        #        cuts.append(spec.length)
+        #            
+        #        self.segment(cuts, up=True)
+        #
+        #else:
+        #    mid1 = spec.hole_positions[2]*0.5+spec.hole_diameters[2]*0.5-spec.hole_diameters[3]*0.5+spec.hole_positions[3]*0.5
+        #    mid2 = spec.hole_positions[5]+spec.hole_diameters[5]
+        #
+        #    upper_segments, lower_segments = pack.plan_segments([mid1/true_length,mid2/true_length], self.mill_length / true_length)
+        #    
+        #    whistle_jaw = whistle_jaw_clipper.copy()
+        #    whistle_jaw.clip(self.working.outside)
+        #    whistle_jaw.remove(self.working.bore)
+        #    #whistle_jaw_space = whistle_jaw_clipper.copy()
+        #    #whistle_jaw_space.clip(self.working.bore)
+        #    whistle_jaw_space = self.working.bore.copy()
+        #    
+        #    whistle_jaw.rotate(1,0,0, 90)
+        #    whistle_jaw_space.rotate(1,0,0, 90)
+        #    
+        #    offset = -whistle_jaw.extent().zmin
+        #    whistle_jaw.move(0,0,offset)
+        #    whistle_jaw_space.move(0,0,offset)
+        #    
+        #    self.save(whistle_jaw, 'jaw')
+        #    jaw_packable = [ pack.Packable([ whistle_jaw, whistle_jaw_space ], 90, self.mill_diameter) ]
+        #
+        #    self.working.bore.add(whistle_jaw_clipper)
+        #    self.working.outside.remove(whistle_jaw_clipper)
+        #                
+        #    pack.cut_and_pack(
+        #        self.working.outside, self.working.bore,
+        #        upper_segments, lower_segments,
+        #        xsize=self.mill_length, 
+        #        ysize=self.mill_width, 
+        #        zsize=self.mill_thickness,
+        #        bit_diameter=self.mill_diameter,
+        #        save=self.save,
+        #        
+        #        extra_packables=[ jaw_packable ],
+        #    )
 
 
 

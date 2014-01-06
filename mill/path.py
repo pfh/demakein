@@ -352,7 +352,7 @@ class Miller(config.Configurable):
     @property
     def res_horizontal_step(self):
         if self.bit_ball:
-            return self.res_finishing_step
+            return self.res_cutting_depth
         else:
             return self.res_bit_radius
 

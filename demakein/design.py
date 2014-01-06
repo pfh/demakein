@@ -428,12 +428,20 @@ class Instrument_designer(config.Action_with_output_dir):
         return [ 0.0 ] * (len(self.inner_diameters)-1)
 
     @property
+    def max_inner_fraction_sep(self):
+        return [ 1.0 ] * (len(self.inner_diameters)-1)
+
+    @property
     def initial_outer_fractions(self):
         return [ (i+1.0)/(len(self.outer_diameters)-1) for i in xrange(len(self.outer_diameters)-2) ]
 
     @property
     def min_outer_fraction_sep(self):
         return [ 0.0 ] * (len(self.outer_diameters)-1)
+
+    @property
+    def max_outer_fraction_sep(self):
+        return [ 1.0 ] * (len(self.outer_diameters)-1)
 
     @property
     def initial_hole_fractions(self):
@@ -554,52 +562,48 @@ class Instrument_designer(config.Action_with_output_dir):
         """ Return an amount of constraint dissatisfaction """
         scores = [ ]
         
-        #if inst.length < 0: 
-            #score += -inst.length
         scores.append(inst.length)
         
         inners = [0.0]+inst.inner_kinks+[inst.length]
         for i in range(len(inners)-1):
-            check = inners[i+1] - inners[i] - self.min_inner_fraction_sep[i]*inst.length
-            #if check < 0: score += -check 
+            sep = inners[i+1]-inners[i]
+            check = sep - self.min_inner_fraction_sep[i]*inst.length
+            scores.append(check)
+            check = self.max_inner_fraction_sep[i]*inst.length - sep
             scores.append(check)
         
         outers = [0.0]+inst.outer_kinks+[inst.length]
         for i in range(len(outers)-1):
-            check = outers[i+1] - outers[i] - self.min_outer_fraction_sep[i]*inst.length
-            #if check < 0: score += -check
+            sep = outers[i+1]-outers[i]
+            check = sep - self.min_outer_fraction_sep[i]*inst.length
+            scores.append(check)
+            check = self.max_outer_fraction_sep[i]*inst.length - sep
             scores.append(check)
         
         if self.n_holes:
             check = inst.hole_positions[0] - self.bottom_clearance_fraction*inst.length
-            #if check < 0: score += -check
             scores.append(check)
             
             check = (1.0-self.top_clearance_fraction)*inst.length - inst.hole_positions[-1]
-            #if check < 0: score += -check
             scores.append(check)
             
             for i, value in enumerate(self.min_hole_spacing):
                 if value is None: continue
                 check = (inst.hole_positions[i+1]-inst.hole_positions[i]) - value
-                #if check < 0: score += -check
                 scores.append(check)
             
             for i, value in enumerate(self.max_hole_spacing):
                 if value is None: continue
                 check = value - (inst.hole_positions[i+1]-inst.hole_positions[i])
-                #if check < 0: score += -check
                 scores.append(check)                
             
             for i, value in enumerate(self.min_hole_diameters):
                 check = inst.hole_diameters[i] - value
-                #if check < 0: score += -check
                 scores.append(check)
             
             for i, value in enumerate(self.max_hole_diameters):
                 if value is None: continue
                 check = value - inst.hole_diameters[i]
-                #if check < 0: score += -check
                 scores.append(check)
             
             for i, value in enumerate(self.balance):
@@ -607,13 +611,10 @@ class Instrument_designer(config.Action_with_output_dir):
                 check = value * 0.5*(inst.hole_positions[i+2]-inst.hole_positions[i]) - abs(
                     0.5*inst.hole_positions[i]+0.5*inst.hole_positions[i+2]-inst.hole_positions[i+1]
                 )
-                #if check < 0: score += -check
                 scores.append(check)
 
         negscores = [ -item for item in scores if item < 0.0 ]
         negscore = sum(negscores) if negscores else 0.0
-        #posscores = [ (item+1e-30)**-1 for item in scores if item >= 0.0 ]
-        #posscore = 1.0/sum(posscores) if posscores else 1e30
         return negscore
 
     def patch_instrument(self, inst):
