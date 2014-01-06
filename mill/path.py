@@ -305,7 +305,13 @@ def unmill(rast, mill_points):
     #    )
     return result
 
-
+def loop_length(loop):
+    total = 0.0
+    for i in xrange(len(loop)):
+        a = loop[i]
+        b = loop[(i+1)%len(loop)]
+        total += math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2)
+    return total
 
 
 @config.Int_flag('res')
@@ -329,6 +335,8 @@ class Miller(config.Configurable):
     cutting_rate = 3.0 #Step-in in bit radii, larger = faster cutting
     finishing_clearance = 0.0
     finish = True
+    
+    minimum_loop = 4.0 #Minimum length of loop to cut, mm
     
     @property
     def res_tool_up(self): return int(self.res * self.tool_up + 0.5)
@@ -369,6 +377,10 @@ class Miller(config.Configurable):
 
     def cut_contour(self, z, points, is_exterior, point_score=lambda x,y,z:1):
         """ z and points at res scale """
+        
+        if loop_length(points) < self.minimum_loop * self.res:
+            print 'Omit short loop', points
+            return
         
         if is_exterior:
             # Drill as far from previous drill points as possible
@@ -498,10 +510,14 @@ class Miller(config.Configurable):
                 infinish_mask_lower = inraster <= (cut_z-self.res_cutting_depth)
                 self.cut_inmask(cut_z, 
                                 infinish_mask & ~infinish_mask_lower, #erode(infinish_mask_lower,self.res_horizontal_step * 1.5), 
-                                in_first =self.res_horizontal_step*2,
-                                out_first=self.res_horizontal_step,
-                                in_step  =self.res_horizontal_step*2,
-                                out_step =self.res_horizontal_step,
+                                #in_first =self.res_horizontal_step*2,
+                                #out_first=self.res_horizontal_step,
+                                #in_step  =self.res_horizontal_step*2,
+                                #out_step =self.res_horizontal_step,
+                                in_first =self.res_horizontal_step,
+                                out_first=0.0,
+                                in_step  =self.res_horizontal_step,
+                                out_step =0.0,
                                 point_score=point_score,
                                 down_cut=False
                                 )
@@ -574,19 +590,22 @@ class Fast(Miller):
 class Cork(Miller):
     x_speed = 10.0
     y_speed = 10.0
-    vertical_speed = 3.0
+    z_speed = 3.0
     movement_speed = 15.0
     
     cutting_depth = 0.5
     finishing_clearance = 0.0
-    finish = False
+    finish = True
 
+class Cork_ball(Cork):
+    bit_ball = True
 
 MILLERS = {
    'wood-end'  : Wood,
    'wood-ball' : Wood_ball,
    'fast-end'  : Fast,
    'cork-end'  : Cork,
+   'cork-ball' : Cork_ball,
 }
 
 
