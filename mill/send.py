@@ -33,7 +33,7 @@ def shift(commands, x,y):
         result.append('Z%d,%d,%d' % tuple(pos))
     return result
 
-def execute(commands, port_name,  start=0):
+def execute(commands, port_name,  start_command=0):
     port = serial.Serial(
         port = port_name,
         baudrate = 9600,
@@ -42,7 +42,7 @@ def execute(commands, port_name,  start=0):
     
     start = time.time()
     #for i, command in enumerate(commands):
-    for i in xrange(start,len(commands)):
+    for i in xrange(start_command,len(commands)):
         command = commands[i]
     
         char = port.read(1)
@@ -114,8 +114,8 @@ class Send(config.Action):
         while True:
             if start == body_start: break
             if commands[start].startswith('Z'):
-                pos = map(int,item[1:].split(','))
-                if pos[2] >= 2420:
+                pos = map(int,commands[start][1:].split(','))
+                if pos[2] >= 2400:
                     break
             start -= 1
         
