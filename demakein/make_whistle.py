@@ -39,7 +39,7 @@ class Make_whistle_head(make.Make):
         outside = self.outside
         #outside = bore * 1.4
         
-        bore_length = bore*2.0        
+        bore_length = bore * 1.5 #*2.0        
         gap_length = bore * self.gap_length
         windcutter_length = bore * 1.0
         

@@ -234,14 +234,14 @@ class Design_recorder(Design_whistle):
 Design a three hole pipe, i.e. the pipe in pipe-and-tabor.
 """)
 class Design_three_hole_whistle(Design_whistle):
-    bore_scale = 1.0 #1.25
+    bore_scale = 1.2
     
     divisions = [
-      #  [],
-      #  [(2,0.3)],
-      #  [(2,0.05),(2,0.5)],
-      #  [(2,0.05),(2,0.35),(2,0.65)],
-        [(1,0.5),(2,0.2),(2,0.5),(2,0.8)],
+        [],
+        [(2,0.3)],
+        [(2,0.05),(2,0.5)],
+        [(2,0.05),(2,0.35),(2,0.65)],
+        [(1,0.5),(2,0.2),(2,0.45),(2,0.7)],
         ]
     
     xpad = 0.0
@@ -261,8 +261,8 @@ class Design_three_hole_whistle(Design_whistle):
     
     initial_hole_fractions = [ 0.1,0.15,0.2 ]
     
-    inner_diameters = design.bore_scaler([ 10.0, 10.0, 20.0, 20.0 ])
-    initial_inner_fractions = [ 0.1, 0.75 ]
+    inner_diameters = design.bore_scaler([ 10.0, 10.0, 12.5, 15.0, 17.5, 20.0,  20.0 ])
+    initial_inner_fractions = [ 0.1, 0.2, 0.3, 0.4, 0.5 ]
     
     outer_diameters = design.bore_scaler([ 45.0, 32.0, 32.0 ])
     outer_angles = [ -25.0, (0.0,None), None ]
@@ -273,6 +273,11 @@ class Design_three_hole_whistle(Design_whistle):
     min_inner_fraction_sep = [ 0.01 ] * 8
 
     fingerings = [
+        ('D3', [1,1,1]),
+        ('E3', [0,1,1]),
+        ('F#3',[0,0,1]),
+        ('G3', [0,0,0]),
+    
         ('D4', [1,1,1]),
         ('E4', [0,1,1]),
         ('F#4',[0,0,1]),

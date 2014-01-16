@@ -206,8 +206,8 @@ class Design_folk_shawm(Shawm_designer):
     initial_hole_fractions = [ 0.5-0.06*i for i in range(5,-1,-1) ]
 
     balance = [ 0.05, None, None, 0.05 ]
-    #hole_angles = [ -30.0, 30.0, 30.0, -30.0, 0.0, 30.0, 0.0 ]
-    hole_angles = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
+    hole_angles = [ -30.0, 30.0, 30.0, -30.0, 0.0, 30.0 ]
+    #hole_angles = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
 
     hole_horiz_angles = [ -5.0, 0.0, 0.0,  5.0, 0.0, 0.0 ]
 
