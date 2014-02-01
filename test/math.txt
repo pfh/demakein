@@ -1,0 +1,91 @@
+
+Junction
+
+n tubes, 0,1,..n-1
+
+Pressure
+
+  pin[i]    of form x exp(im*d*t)  where d = 2*pi/frequency
+  pout[i]   of form x exp(-im**dt)
+  
+  im = sqrt(-1)
+  
+  For simplicity
+  pin0 = 1
+
+Area
+
+  a[i]
+
+  For simplicity
+  a0 = 1
+
+Replies
+
+  pin[i] = r[i] * pout[i]
+
+  i in 1..n-1
+  
+Velocity
+
+  vin[i]  = im*d*pin[i]
+  vout[i] = -im*d*pout[i]
+
+Junction pressure
+
+  For all i
+  pjunc = pin[i] + pout[i]
+
+Air is not created or destroyed
+
+  0 = sum a[i]*(vin[i]+vout[i])
+
+
+n=2 case
+
+  0 = pin0-pout0+a1*(pin1-pout1)
+  pin0 = 1
+  pjunc = pin0+pout0 = pin1+pout1
+  pin1 = r1 * pout1
+  
+  
+
+  0 = 1-pout0+a1*pin1-a1*pout1
+  
+  0 = 1-pout0+a1*r1*pout1-a1*pout1
+  
+  pjunc = 1+pout0
+  pjunc = r1*pout1+pout1
+  pout0 = pjunc-1 = r1*pout1+pout1-1
+  
+  0 = 1-r1*pout1-pout1+1+a1*r1*pout1-a1*pout1
+  0 = 2 + (-r1-1+a1*r1-a1)*pout1
+  pout1 = -2 / (-r1-1+a1*r1-a1)
+  pout1 = 2/(r1+1-a1*r1+a1)
+  
+
+
+
+n=3 case
+
+  0 = pin0-pout0+a1*(pin1-pout1)+a2*(pin2-pout2)
+  pjunc = pin0+pout0 = pin1+pout1 = pin2+pout2
+  pin0 = 1
+  pin1 = r1 * pout1
+  pin2 = r2 * pout2
+
+  0 = 1-pout0+a1*(r1-1)*pout1+a2*(r2-1)*pout2
+  pjunc = 1+pout0 = (r1+1)*pout1 = (r2+1)*pout2
+
+  pout0 = pjunc-1
+  pout1 = pjunc/(r1+1)
+  pout2 = pjunc/(r2+1)
+  0 = 2-pjunc+a1*(r1-1)/(r1+1)*pjunc+a2*(r2-1)/(r2+1)*pjunc
+  pjunc*(1-a1*(r1-1)/(r1+1)-a2*(r2-1)/(r2+1)) = 2
+  pjunc = 2 / (1-a1*(r1-1)/(r1+1)-a2*(r2-1)/(r2+1))
+
+
+
+
+
+
