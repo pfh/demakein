@@ -63,7 +63,7 @@ n=2 case
   pout1 = -2 / (-r1-1+a1*r1-a1)
   pout1 = 2/(r1+1-a1*r1+a1)
   
-
+  This is a bit roundabout, see below.
 
 
 n=3 case
@@ -77,6 +77,8 @@ n=3 case
   0 = 1-pout0+a1*(r1-1)*pout1+a2*(r2-1)*pout2
   pjunc = 1+pout0 = (r1+1)*pout1 = (r2+1)*pout2
 
+  We can put everthing in terms of pjunc.
+
   pout0 = pjunc-1
   pout1 = pjunc/(r1+1)
   pout2 = pjunc/(r2+1)
@@ -84,7 +86,7 @@ n=3 case
   pjunc*(1-a1*(r1-1)/(r1+1)-a2*(r2-1)/(r2+1)) = 2
   pjunc = 2 / (1-a1*(r1-1)/(r1+1)-a2*(r2-1)/(r2+1))
 
-
+  It follows quite a simple pattern.
 
 
 

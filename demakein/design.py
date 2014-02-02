@@ -92,31 +92,55 @@ def pipe_reply(reply_end, length_on_wavelength):
     angle = FOUR_PI*length_on_wavelength
     return complex(math.cos(angle),math.sin(angle)) * reply_end
 
+#
+#def junction_reply(area, areas, replies):
+#    total_area = area + sum(areas)
+#    
+#    return area / (total_area*(0.5 - sum( a/(total_area*(1.0/r+1.0)) for a,r in zip(areas, replies) ))) - 1.0
+#    
+#    #Equivalently?
+#    #x = area / (total_area*(0.5 - sum( a/(total_area*(r+1.0)) for a,r in zip(areas, replies) ))) - 1.0
+#    #return 1/x
+#
+#
+#def junction2_reply(area, area1, reply1):
+#    total_area = area + area1
+#    
+#    return area / (total_area*(0.5 - area1/(total_area*(1.0/reply1+1.0)))) - 1.0
+#
+#
+#def junction3_reply(area, area1, area2, reply1, reply2):
+#    total_area = area + area1 + area2
+#    
+#    return area / (total_area*(
+#        0.5 
+#        - area1/(total_area*(1.0/reply1+1.0))
+#        - area2/(total_area*(1.0/reply2+1.0))
+#    )) - 1.0
+#
 
-def junction_reply(area, areas, replies):
-    total_area = area + sum(areas)
-    
-    return area / (total_area*(0.5 - sum( a/(total_area*(1.0/r+1.0)) for a,r in zip(areas, replies) ))) - 1.0
-    
-    #Equivalently?
-    #x = area / (total_area*(0.5 - sum( a/(total_area*(r+1.0)) for a,r in zip(areas, replies) ))) - 1.0
-    #return 1/x
 
 
-def junction2_reply(area, area1, reply1):
-    total_area = area + area1
-    
-    return area / (total_area*(0.5 - area1/(total_area*(1.0/reply1+1.0)))) - 1.0
+def junction2_reply(a0, a1, r1):
+    """ Relative phase reply for pipe 0 of two pipe junction
+        with pipe cross section areas a0 and a1
+        and pipe 1 relative phase reply r1.    
+    """
+    pjunc = 2.0*a0 / (a0-a1*((r1-1.0)/(r1+1.0)))
+    #mag1 = abs( pjunc / (r1+1.0) )    
+    return pjunc - 1.0
 
 
-def junction3_reply(area, area1, area2, reply1, reply2):
-    total_area = area + area1 + area2
-    
-    return area / (total_area*(
-        0.5 
-        - area1/(total_area*(1.0/reply1+1.0))
-        - area2/(total_area*(1.0/reply2+1.0))
-    )) - 1.0
+def junction3_reply(a0,a1,a2, r1,r2):
+    """ Relative phase reply for pipe 0 of three pipe junction
+        with pipe cross section areas a0, a1 and a2
+        and relative phase replies r1 and r2.    
+    """
+    pjunc = 2.0*a0 / (a0-a1*((r1-1.0)/(r1+1.0))-a2*((r2-1.0)/(r2+1.0)))    
+    #mag1 = abs( pjunc / (r1+1.0) )
+    #mag2 = abs( pjunc / (r2+1.0) )
+    return pjunc - 1.0
+
 
 
 def end_flange_length_correction(outer_diameter, inner_diameter):

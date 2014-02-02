@@ -29,14 +29,17 @@ def junction3_reply(area, area1, area2, reply1, reply2):
 
 
 
-def new2(a1, r1):
+def new2(a0, a1, r1):
     #pjunc = 2.0*(reply1+1.0)/(reply1+1.0-area1*reply1)
     
     #pout1 = 2.0 / (r1+1.0-a1*r1-a1)
     #pout1 = -2.0 / (-r1-1.0+a1*r1-a1)
-    pout1 = 2.0/(r1+1.0-a1*r1+a1)
-    pjunc = pout1 + r1*pout1
+    #pout1 = 2.0/(r1+1.0-a1*r1+a1)
+    #pjunc = pout1 + r1*pout1
 
+    pjunc = 2.0*a0 / (a0-a1*((r1-1.0)/(r1+1.0)))
+
+    pout1 = pjunc / (r1+1.0)
     
     pin1 = r1 * pout1
     pin0 = 1.0
@@ -47,15 +50,16 @@ def new2(a1, r1):
     print
     print pin0-pout0+a1*(pin1-pout1)
     print
-    
+    print abs(pout1), abs(pout1/r1)
     return pjunc - 1.0
 
 
-def new3(a1, a2, r1, r2):
-    pjunc = 2.0 / (1.0-a1*(r1-1.0)/(r1+1.0)-a2*(r2-1.0)/(r2+1.0))
+def new3(a0, a1, a2, r1, r2):
+    pjunc = 2.0*a0 / (a0-a1*((r1-1.0)/(r1+1.0))-a2*((r2-1.0)/(r2+1.0)))
     
     pout1 = pjunc / (r1+1.0)
     pout2 = pjunc / (r2+1.0)
+    print abs(pjunc)
     print abs(pout1)
     print abs(pout2)
 
@@ -65,13 +69,14 @@ def new3(a1, a2, r1, r2):
 area = 1.0
 area1 = 5.0
 reply1 = -1j
-area2 = 4.0
-reply2 = 1
+area2 = 7.0
+reply2 = 1j
 
-#print junction2_reply(area, area1, reply1)
-#print new2(area1, reply1)
+print junction2_reply(area, area1, reply1)
+print new2(area, area1, reply1)
+print '...'
 
 print junction3_reply(area,area1,area2, reply1,reply2)
-print new3(area1, area2, reply1, reply2)
+print new3(area, area1, area2, reply1, reply2)
 
 
