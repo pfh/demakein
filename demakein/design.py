@@ -127,8 +127,8 @@ def junction2_reply(a0, a1, r1):
         and pipe 1 relative phase reply r1.    
     """
     pjunc = 2.0*a0 / (a0-a1*((r1-1.0)/(r1+1.0)))
-    #mag1 = abs( pjunc / (r1+1.0) )    
-    return pjunc - 1.0
+    mag1 = abs( pjunc / (r1+1.0) )    
+    return pjunc-1.0, mag1
 
 
 def junction3_reply(a0,a1,a2, r1,r2):
@@ -137,9 +137,9 @@ def junction3_reply(a0,a1,a2, r1,r2):
         and relative phase replies r1 and r2.    
     """
     pjunc = 2.0*a0 / (a0-a1*((r1-1.0)/(r1+1.0))-a2*((r2-1.0)/(r2+1.0)))    
-    #mag1 = abs( pjunc / (r1+1.0) )
-    #mag2 = abs( pjunc / (r2+1.0) )
-    return pjunc - 1.0
+    mag1 = abs( pjunc / (r1+1.0) )
+    mag2 = abs( pjunc / (r2+1.0) )
+    return pjunc-1.0, mag1, mag2
 
 
 
@@ -214,10 +214,11 @@ class Instrument:
         
         position = -end_flange_length_correction(self.outer(0.0,True),self.stepped_inner(0.0,True))
         diameter = self.stepped_inner(0.0, True)
+        self.initial_emission = [ circle_area(diameter) ]
         for pos, action, index in events:
             length = pos-position
             
-            def func(reply_end, wavelength, fingers, length=length):
+            def func(reply_end, wavelength, fingers, emission, length=length):
                 return pipe_reply(reply_end, length/wavelength)
             self.actions.append(func)
             
@@ -229,8 +230,12 @@ class Instrument:
                 diameter = self.stepped_inner.high[index]
                 area = circle_area(diameter)
                 
-                def func(reply, wavelength, fingers, area=area, area1=area1):
-                    return junction2_reply(area, area1, reply)
+                def func(reply, wavelength, fingers, emission, area=area, area1=area1):
+                    new_reply, mag1 = junction2_reply(area, area1, reply)
+                    if emission is not None:
+                        for i in xrange(len(emission)):
+                            emission[i] *= mag1
+                    return new_reply
                 self.actions.append(func)
                 
             elif action == 'hole':
@@ -246,7 +251,7 @@ class Instrument:
                 open_length = true_length + hole_length_correction(hole_diameter, diameter, False) 
                 closed_length = true_length + hole_length_correction(hole_diameter, diameter, True)
 
-                def func(reply, wavelength, fingers, 
+                def func(reply, wavelength, fingers, emission,
                          area=area,hole_area=hole_area,
                          open_length=open_length,closed_length=closed_length,
                          index=index):
@@ -254,15 +259,36 @@ class Instrument:
                         hole_reply = pipe_reply(1.0, closed_length/wavelength)
                     else:
                         hole_reply = pipe_reply(-1.0, open_length/wavelength)
-                    return junction3_reply(area, area, hole_area, reply, hole_reply)
+                    new_reply, mag1, mag2 = junction3_reply(area, area, hole_area, reply, hole_reply)
+                
+                    if emission is not None:
+                        for i in xrange(len(emission)):
+                            emission[i] *= mag1
+                        if not fingers[index]:
+                            emission.append(hole_area*mag2)
+                
+                    return new_reply
+                    
                 self.actions.append(func)
     
+        self.emission_divide = circle_area(diameter)
     
-    def resonance_score(self, w, fingers):
+    
+    def resonance_score(self, w, fingers, calc_emission=False):
         """ A score -1 <= score <= 1, zero if wavelength w resonantes """
         reply = -1.0 #Open end
-        for action in self.actions:
-            reply = action(reply, w, fingers)
+        
+        if not calc_emission:
+            for action in self.actions:
+                reply = action(reply, w, fingers, None)
+        else:
+            emission = list(self.initial_emission)
+            for action in self.actions:
+                reply = action(reply, w, fingers, emission)
+        
+            # Scale by top area
+            for i in xrange(len(emission)):
+                emission[i] /= self.emission_divide
         
         if not self.closed_top: reply *= -1.0
         
@@ -272,10 +298,15 @@ class Instrument:
         angle2 = angle1 - math.pi*2.0
         
         if angle1 < -angle2:
-            return angle1/math.pi
+            result = angle1/math.pi
         else:
-            return angle2/math.pi
+            result = angle2/math.pi
         
+        if not calc_emission:
+            return result
+        else:
+            return result, emission
+    
         
     def true_wavelength_near(self, w, fingers, max_grad, step_cents = 1.0, step_increase = 1.05, max_steps = 100):
         step = pow(2.0, step_cents/1200.0)
@@ -385,6 +416,9 @@ def power_scaler(power, value):
 
 
 @config.Int_flag('transpose', 'Transpose instrument by this many semitones.')
+@config.Float_flag('emission', 
+    'Weight to give to loudness of instrument, possibly sacrificing being-in-tuneness.'
+    )
 class Instrument_designer(config.Action_with_output_dir):
     instrument_class = Instrument
 
@@ -393,6 +427,8 @@ class Instrument_designer(config.Action_with_output_dir):
     closed_top = False
 
     transpose = 0
+    
+    emission = 0.0
     
     initial_length = None
 
@@ -649,6 +685,7 @@ class Instrument_designer(config.Action_with_output_dir):
         inst = self.patch_instrument(inst)
     
         score = 0.0
+        emission_score = 0.0
         div = 0.0
         
         inst.prepare()
@@ -663,7 +700,14 @@ class Instrument_designer(config.Action_with_output_dir):
             score += weight * diff**3 / (1.0 + (diff/20.0)**2)
             div += weight
             
-        return (score/div)**(1.0/3)
+            if self.emission:
+                _, emission = inst.resonance_score(w2,fingers,True)
+                rms = math.sqrt(sum(item*item for item in emission))
+                emission_score += weight * self.emission * rms
+
+            
+            
+        return (score/div)**(1.0/3) - emission_score/div
         
         #return ( (score/scale) ** (1.0/2) )*100.0
 
@@ -723,17 +767,17 @@ class Instrument_designer(config.Action_with_output_dir):
         patched_instrument = self.patch_instrument(self.instrument)
         patched_instrument.prepare()
         
-        #any_extra = any( item != 0.0 for item in self.hole_extra_height_by_diameter )
-        #if any_extra:
-        #TODO: implement embextra using patch_instrument
-        mod_instrument = self.unpack( state_vec )
-        #mod_instrument.hole_extra_height_by_diameter = [ 0.0 ] * len(self.hole_extra_height_by_diameter)
-        mod_instrument.hole_lengths = [
-            (mod_instrument.outer(mod_instrument.hole_positions[i])
-             - mod_instrument.inner(mod_instrument.hole_positions[i])) * 0.5
-            for i in range(self.n_holes)
-        ]
-        mod_instrument.prepare()
+      #  #any_extra = any( item != 0.0 for item in self.hole_extra_height_by_diameter )
+      #  #if any_extra:
+      #  #TODO: implement embextra using patch_instrument
+      #  mod_instrument = self.unpack( state_vec )
+      #  #mod_instrument.hole_extra_height_by_diameter = [ 0.0 ] * len(self.hole_extra_height_by_diameter)
+      #  mod_instrument.hole_lengths = [
+      #      (mod_instrument.outer(mod_instrument.hole_positions[i])
+      #       - mod_instrument.inner(mod_instrument.hole_positions[i])) * 0.5
+      #      for i in range(self.n_holes)
+      #  ]
+      #  mod_instrument.prepare()
         
         diagram = svg.SVG()
         
@@ -796,6 +840,11 @@ class Instrument_designer(config.Action_with_output_dir):
             diagram.text(text_x, text_y,
                   '%5s %s %-4d cents grad=%.1f' % (describe(w1), '     ' if cents == 0 else ' flat' if cents > 0 else 'sharp', abs(cents), grad)
             )
+            
+            _, emission = patched_instrument.resonance_score(w2,fingers,True)
+            diagram.text(graph_x+220, text_y,
+                 ', '.join('%.3f' % item for item in emission)
+                 )
             
             #if any_extra:
             #w3, grad3 = mod_instrument.true_wavelength_near(w1, fingers, self.max_grad)
