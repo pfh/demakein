@@ -6,7 +6,7 @@ class Design_horn(demakein.design.Instrument_designer):
     closed_top = True
     
 #    inner_diameters = [ 70.0, 50.0, 30.0, 10.0, 3.0, 3.0, 15.0 ]
-    inner_diameters = [ 50.0, 40.0, 20.0, 10.0, 2.5, 2.5, 15.0 ]
+    inner_diameters = [ 50.0, 40.0, 30.0, 20.0, 10.0, 5.0, 2.5, 2.5, 15.0 ]
     
     min_inner_fraction_sep = [ 0.001 ] * (len(inner_diameters)-2) + [ 0.01 ]
     

@@ -29,7 +29,8 @@ class Make_shawm(make.Make_millable_instrument):
     def run(self):
         spec = self.working.spec
         
-        length = spec.length * 0.865 #Reed accounts for part of length, etc
+        length = spec.length * 0.855 #Reed accounts for part of length, etc
+        # 0.865 was still rather short (Feb 2014)
         # 0.875 needed a rather short reed (shapeways tenor, November 2012)
         
         #length = spec.inner.pos[-2]
@@ -86,11 +87,11 @@ class Make_shawm(make.Make_millable_instrument):
         #cut5b = length*0.5+cut3*0.5
         #cut5b -= outer_profile(cut5b)*0.25
         #cut5 = max(cut5a, cut5b)
-
-        if self.mill:
-            cut0 = cut1*0.5
-            cut6 = length*0.5+cut5*0.5
-            upper_segments, lower_segments = pack.plan_segments([cut0/length,cut1/length,cut2/length,cut3/length,cut4/length,cut5/length,cut6/length], self.mill_length / length)
+#
+#        if self.mill:
+#            cut0 = cut1*0.5
+#            cut6 = length*0.5+cut5*0.5
+#            upper_segments, lower_segments = pack.plan_segments([cut0/length,cut1/length,cut2/length,cut3/length,cut4/length,cut5/length,cut6/length], self.mill_length / length)
         
         self.make_instrument(
             inner_profile=spec.inner.clipped(-50,length+50),

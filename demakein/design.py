@@ -416,8 +416,11 @@ def power_scaler(power, value):
 
 
 @config.Int_flag('transpose', 'Transpose instrument by this many semitones.')
-@config.Float_flag('emission', 
-    'Weight to give to loudness of instrument, possibly sacrificing being-in-tuneness.'
+@config.Float_flag('tweak_emission', 
+    'Experimental. '
+    'Add a term to the optimization '
+    'to try to make all notes of roughly the same volume, '
+    'possibly sacrificing being-in-tuneness.'
     )
 class Instrument_designer(config.Action_with_output_dir):
     instrument_class = Instrument
@@ -428,7 +431,7 @@ class Instrument_designer(config.Action_with_output_dir):
 
     transpose = 0
     
-    emission = 0.0
+    tweak_emission = 0.0
     
     initial_length = None
 
@@ -685,8 +688,11 @@ class Instrument_designer(config.Action_with_output_dir):
         inst = self.patch_instrument(inst)
     
         score = 0.0
-        emission_score = 0.0
         div = 0.0
+
+        emission_score = 0.0
+        emission_score2 = 0.0
+        emission_div = 0.0
         
         inst.prepare()
         
@@ -697,17 +703,28 @@ class Instrument_designer(config.Action_with_output_dir):
             diff = abs(math.log(w1)-math.log(w2))*s
             #weight = w1
             weight = 1.0
-            score += weight * diff**3 / (1.0 + (diff/20.0)**2)
+            #score += weight * diff**3 / (1.0 + (diff/20.0)**2)
+            score += weight * diff**3
             div += weight
-            
-            if self.emission:
+                        
+            if self.tweak_emission:
+                emission_weight = 1.0 #w1
+                emission_div += emission_weight
                 _, emission = inst.resonance_score(w2,fingers,True)
                 rms = math.sqrt(sum(item*item for item in emission))
-                emission_score += weight * self.emission * rms
-
+                x = rms
+                emission_score += emission_weight * x
+                emission_score2 += emission_weight * x * x
+                            
             
-            
-        return (score/div)**(1.0/3) - emission_score/div
+        result = (score/div)**(1.0/3) 
+        if self.tweak_emission:
+            x = emission_score / emission_div
+            x2 = emission_score2 / emission_div
+            var = x2-x*x
+            result += self.tweak_emission * math.sqrt(var)/x
+        return result
+        
         
         #return ( (score/scale) ** (1.0/2) )*100.0
 
@@ -814,7 +831,10 @@ class Instrument_designer(config.Action_with_output_dir):
         diagram.text(text_x + 90.0, min(text_y,-self.instrument.length), '%.1fmm' % self.instrument.length)
 
         text_x = diagram.max_x
+        graph_x = text_x+200
+        emit_x = graph_x+220
         text_y = 0
+        
         for note, fingers in self.fingerings:
             w1 = wavelength(note, self.transpose)
             w2, grad = patched_instrument.true_wavelength_near(w1, fingers, self.max_grad)
@@ -828,7 +848,6 @@ class Instrument_designer(config.Action_with_output_dir):
             probes = [ low * pow(step,i) for i in range(n_probes) ]
             scores = [ patched_instrument.resonance_score(probe, fingers) for probe in probes ]
 
-            graph_x = text_x+200
             points = [ (graph_x+i*width/n_probes,text_y-score*7.0)
                        for i,score in enumerate(scores) ]
             for i in range(len(probes)-1):
@@ -842,8 +861,8 @@ class Instrument_designer(config.Action_with_output_dir):
             )
             
             _, emission = patched_instrument.resonance_score(w2,fingers,True)
-            diagram.text(graph_x+220, text_y,
-                 ', '.join('%.3f' % item for item in emission)
+            diagram.text(emit_x, text_y,
+                 ', '.join('%.2f' % item for item in emission)
                  )
             
             #if any_extra:
@@ -855,19 +874,32 @@ class Instrument_designer(config.Action_with_output_dir):
             
             
             text_y -= 25
+        
+        diagram.text(graph_x, text_y - 10,
+            'Nearby resonances:',
+            color='#000000'
+            )
+        
+        diagram.text(emit_x, text_y - 20,
+            'Volume of sound emission from\n'
+            'instrument end and open holes:',
+            color='#000000',
+            )
             
             
         
-        diagram.text(0.0, 20.0, 'Outer diameters:')
+        text_y -= 50.0 + 10.0 * max(len(self.inner_diameters),len(self.outer_diameters))
+        
+        diagram.text(graph_x-150.0, text_y, 'Outer diameters:', color='#000000')
         kinks = [0.0]+self.instrument.outer_kinks+[self.instrument.length]
         for i, item in enumerate(self.outer_diameters):
-            diagram.text(0.0, 20.0+(len(self.outer_diameters)-i)*10.0, 
+            diagram.text(graph_x-150.0, text_y+10.0+(len(self.outer_diameters)-i)*10.0, 
                 describe_low_high(item) + 'mm at %.1fmm' % kinks[i]) 
         
-        diagram.text(150.0, 20.0, 'Inner diameters:')
+        diagram.text(graph_x, text_y, 'Inner diameters:', color='#000000')
         kinks = [0.0]+self.instrument.inner_kinks+[self.instrument.length]
         for i, item in enumerate(self.inner_diameters):
-            diagram.text(150.0, 20.0+(len(self.inner_diameters)-i)*10.0, 
+            diagram.text(graph_x, text_y+10.0+(len(self.inner_diameters)-i)*10.0, 
                 describe_low_high(item) + 'mm at %.1fmm' % kinks[i]) 
         
         diagram.save( os.path.join(self.output_dir, 'diagram.svg') )

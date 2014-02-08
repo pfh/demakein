@@ -131,7 +131,7 @@ class Flute_designer(design.Instrument_designer):
     # 2.5/8 = 0.3    ~ 20 cents flat
     # 5/8 = 0.6      ~ too high
     # 0.45 (sop_flute_5)   ~ a tiny bit low
-    # 0.53 (sop_flute_8)   ~ a tiny biy low?, needed to push cork in 1.5mm
+    # 0.53 (sop_flute_8)   ~ a tiny bit low?, needed to push cork in 1.5mm
     #                        + perfect, printed plastic sop flute
     # 0.56                 ~ definitely high, printed plastic sop flute
     
@@ -151,7 +151,9 @@ class Flute_designer(design.Instrument_designer):
     
     initial_length = design.wavelength('D4') * 0.5
     
-    initial_hole_fractions = [ 0.175 + 0.5*i/6 for i in range(6) ] + [ 0.97 ]
+    @property
+    def initial_hole_fractions(self):
+        return [ 0.175 + 0.5*i/(self.n_holes-1) for i in range(self.n_holes-1) ] + [ 0.97 ]
 
     
 #    min_hole_diameters = design.sqrt_scaler([ 6.5 ] * 6  + [ 12.2 ])
@@ -160,7 +162,8 @@ class Flute_designer(design.Instrument_designer):
 
     min_hole_diameters = design.power_scaler(1/3., [ 3.0 ] * 6  + [ 11.3 ])
     max_hole_diameters = design.power_scaler(1/3., [ 11.4 ] * 6 + [ 11.4 ])
-    
+    hole_horiz_angles = [0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0]    
+
     divisions = [
         [ (5, 0.0) ],
         [ (2, 0.0), (5, 0.333) ],

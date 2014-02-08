@@ -29,28 +29,33 @@ class Shawm_designer(design.Instrument_designer):
     #inner_diameters = bore_scaler([ 35.0, 30.0, 25.0, 20.0, 15.0, 10.0, 6.0, 6.0 ])
     inner_diameters = bore_scaler([ 75.0, 70.0, 65.0, 60.0, 55.0, 50.0, 45.0, 40.0, 35.0, 30.0, 25.0, 20.0, 15.0, 10.0, 6.0, 6.0 ])
 
-    @property
-    def initial_inner_fractions(self):
-        #return [ 0.02 ] * (len(self.inner_diameters)-2) + [ 0.1 ] #0.125
-        d = [ (1.0-(item/self.inner_diameters[0]))**2 for item in self.inner_diameters ]
-        return d[1:-1]
-        
-    #@property
-    #def min_inner_fraction_sep(self):
-    #    #return [ 0.02 ] * (len(self.inner_diameters)-2) + [ 0.1 ] #0.125
-    #    d = [ (1.0-(item/self.inner_diameters[0]))**2 for item in self.inner_diameters ]
-    #    return [ min(0.05, (d[i]+d[i+1])*(d[i+1]-d[i])) for i in xrange(len(self.inner_diameters)-2) ] + [0.1] #Cheat
-    #
     #@property
     #def initial_inner_fractions(self):
-    #    diams = self.inner_diameters
-    #    mins = [ i+0.01 for i in self.min_inner_fraction_sep ]
-    #    for i in xrange(1,len(mins)): mins[i] = mins[i] + mins[i-1]
-    #    #return [ ( i * 1.0 / len(diams) )**1.5 for i in range(1,len(diams)-1) ]
-    #    return [
-    #        max(mins[i-1], 1.0 - 2.0*diams[i]/diams[0])
-    #        for i in range(1,len(diams)-1)
-    #    ]
+    #    #return [ 0.02 ] * (len(self.inner_diameters)-2) + [ 0.1 ] #0.125
+    #    d = [ (1.0-(item/self.inner_diameters[0]))**2 for item in self.inner_diameters ]
+    #    return d[1:-1]
+    #
+    ##min_inner_fraction_sep = [ 0.001 ] * 14 + [ 0.1 ]
+    #min_inner_fraction_sep = [ 0.001 ] * 9 + [ 0.05 ] * 5 + [ 0.1 ]
+        
+    @property
+    def min_inner_fraction_sep(self):
+        #return [ 0.02 ] * (len(self.inner_diameters)-2) + [ 0.1 ] #0.125
+        d = [ 0.5* (1.0-(item/(self.inner_diameters[0]* 1.5 )))**2 for item in self.inner_diameters ]
+        return [ min(0.05, (d[i]+d[i+1])*(d[i+1]-d[i])) for i in xrange(len(self.inner_diameters)-2) ] \
+               + [0.16]
+    
+    @property
+    def initial_inner_fractions(self):
+        diams = self.inner_diameters
+        mins = [ i+0.05 for i in self.min_inner_fraction_sep ]
+        for i in xrange(1,len(mins)): mins[i] = mins[i] + mins[i-1]
+        #return [ ( i * 1.0 / len(diams) )**1.5 for i in range(1,len(diams)-1) ]
+        return [
+            #max(mins[i-1], 1.0 - 2.0*diams[i]/diams[0])
+            mins[i-1] + 1.0 - mins[-1]
+            for i in range(1,len(diams)-1)
+        ]
 
     outer_add = True
     outer_diameters = bore_scaler([ 16.0, 10.0 ])
@@ -64,8 +69,8 @@ Design a shawm / haut-bois / oboe / bombard. Fingering system similar to recorde
 """\
 The flare at the end is purely decorative.
 """)
-class Design_shawm(Shawm_designer):    
-    min_hole_diameters = bore_scaler([ 4.5 ] * 8)
+class Design_shawm(Shawm_designer):        
+    min_hole_diameters = bore_scaler([ 5.25 ] * 8)
     max_hole_diameters = bore_scaler([ 12.0 ] * 8)
     
     initial_hole_diameter_fractions = [0.25]*8    
@@ -73,10 +78,11 @@ class Design_shawm(Shawm_designer):
 
     max_hole_spacing = design.scaler([ 40,40,40,None,40,40, 20 ])
     
-    balance = [ 0.2, 0.1, 0.3, 0.3, 0.1, None ]
+    #balance = [ 0.2, 0.1, 0.3, 0.3, 0.1, None ]
+    balance = [ 0.1, 0.1, 0.3, 0.3, 0.1, None ]
     #balance = [ 0.2, 0.1, None, None, 0.1, None ]
     hole_angles = [ -30.0, -30.0, -30.0, 30.0,  0.0, 0.0, 0.0, 0.0 ]
-    hole_horiz_angles = [ -20.0 ] + [ 0.0 ] * 6 + [ 180.0 ]
+    hole_horiz_angles = [ -25.0, -5.0, 0.0, 0.0, 5.0, 0.0, 0.0, 180.0 ]
     
     initial_length = design.wavelength('C4') * 0.4
 
@@ -87,7 +93,7 @@ class Design_shawm(Shawm_designer):
         ('F4',  [1,1,0,1,1,1,1,1]),
         ('F#4', [0,1,1,0,1,1,1,1]),
         ('G4',  [0,0,0,0,1,1,1,1]),
-        ('G#4', [0,1,1,1,0,1,1,1]),
+        #('G#4', [0,1,1,1,0,1,1,1]),
         ('A4',  [0,0,0,0,0,1,1,1]),
         ('Bb4', [0,0,0,1,1,0,1,1]),
         ('B4',  [0,0,0,0,0,0,1,1]),
@@ -113,8 +119,8 @@ class Design_shawm(Shawm_designer):
         
         #More harmonics of basic horn
         
-        ('C4*3',  [1,1,1,1,1,1,1,1]),
-        ('C4*4',  [1,1,1,1,1,1,1,1]),
+        #('C4*3',  [1,1,1,1,1,1,1,1]),
+        #('C4*4',  [1,1,1,1,1,1,1,1]),
         
         #('C4*5',  [1,1,1,1,1,1,1,1]),
         #('C4*6',  [1,1,1,1,1,1,1,1]),
@@ -129,6 +135,8 @@ class Design_shawm(Shawm_designer):
 
     divisions = [
         [ (3,0.5) ],
+        [ (0,0.25), (6,0.0) ],
+        [ (-1,0.85), (2,0.5), (6,0.0) ],        
         ]
 
 

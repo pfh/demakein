@@ -96,9 +96,9 @@ class Make_flute(make.Make_millable_instrument):
              inner_profile=inner_profile, outer_profile=outer_profile, 
              hole_positions=spec.hole_positions, hole_diameters=spec.hole_diameters, hole_vert_angles=spec.hole_angles, 
              #hole_horiz_angles=[0.0]*7,
-             hole_horiz_angles=[0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0],
-             xpad=[0.0]*6+[emb_xpad], 
-             ypad=[0.0]*6+[emb_ypad],
+             hole_horiz_angles=designer.hole_horiz_angles,
+             xpad=[0.0]*(designer.n_holes-1)+[emb_xpad], 
+             ypad=[0.0]*(designer.n_holes-1)+[emb_ypad],
              with_fingerpad=[True]*6+[False])
         
         #instrument = shape.extrude_profile(outer_profile)

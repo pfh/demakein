@@ -1,4 +1,9 @@
 
+0.16 - Design svg now shows where the sound comes out.
+       (Mostly not from the end of the instrument,
+        flared ends are largely decorative!)
+       Added --tweak-emission flag, but it doesn't work.
+
 0.15 - Refinements to three hole whistle.
 
 0.14 - Fix optimizer bug -- could halt early.

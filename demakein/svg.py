@@ -91,13 +91,13 @@ class SVG:
         self.line([ ( 0.5*x,-y) for x,y in points ], color)
         self.line([ (-0.5*x,-y) for x,y in points ], color)
 
-    def text(self, x,y, text):
+    def text(self, x,y, text, color='#666666'):
         font_height = 8
         yy = y + font_height * 0.5
         self.require(x,yy-font_height)
         self.require(x+len(text)*font_height*0.8,yy)
         self.commands.append(
-            '<text x="%(x)f" y="%(yy)f" fill="#666666" font-size="10" font-family="monospace" xml:space="preserve">%(text)s</text>' % locals()
+            '<text x="%(x)f" y="%(yy)f" fill="%(color)s" font-size="10" font-family="monospace" xml:space="preserve">%(text)s</text>' % locals()
         )
         return y-font_height
 
