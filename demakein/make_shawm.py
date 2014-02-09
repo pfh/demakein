@@ -23,7 +23,7 @@ Produce 3D models using the output of "demakein make-shawm:".
 @config.Bool_flag('decorate', 'Add some decorative rings.')
 @config.Bool_flag('bauble', 'Add a gratuitous bauble to the end.')
 class Make_shawm(make.Make_millable_instrument):
-    decorate = True
+    decorate = False
     bauble = False
     
     def run(self):

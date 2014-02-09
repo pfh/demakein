@@ -6,8 +6,7 @@ import profile, design
 
 from nesoni import config
 
-fingerings = {
-    'pflute' : [
+pflute_fingerings = [
         ('D4',   [1,1,1,1,1,1]),
         ('E4',   [0,1,1,1,1,1]),
         ('F4',   [1,0,1,1,1,1]),
@@ -38,9 +37,9 @@ fingerings = {
         
         ('D6',   [1,1,1,1,1,1]), 
         #('E6',   [0,1,0,0,1,1]), 
-    ],
+    ]
         
-    'folk' : [
+folk_fingerings = [
         ('D4',   [1,1,1,1,1,1]),
         ('E4',   [0,1,1,1,1,1]),
         ('F#4',  [0,0,1,1,1,1]),
@@ -71,27 +70,9 @@ fingerings = {
         #('F6',   [1,0,1,1,1,1]),
         #('G6',   [1,0,0,1,1,1]),
         #('A6',   [0,1,1,1,1,0]), #?        
-    ],
+    ]
 
-    'minor' : [
-        ('D4',   [1,1,1,1,1,1]),
-        ('E4',   [0,1,1,1,1,1]),
-        ('F4',   [0,0,1,1,1,1]),
-        ('G4',   [0,0,0,1,1,1]),
-        ('A4',   [0,0,0,0,1,1]),
-        ('Bb4',  [0,0,0,0,0,1]),
-        ('C5',   [0,0,0,0,0,0]),
-        ('D5',   [1,1,1,1,1,1]),
-        ('E5',   [0,1,1,1,1,1]),
-        ('F5',   [0,0,1,1,1,1]),
-        ('G5',   [0,0,0,1,1,1]),
-        ('A5',   [0,0,0,0,1,1]),
-        ('Bb5',  [0,0,0,0,0,1]),
-        ('C6',   [0,0,0,0,0,0]),
-        ('D6',   [1,1,1,1,1,1]),
-    ],
-    
-    'dorian' : [
+dorian_fingerings = [
         ('D4',   [1,1,1,1,1,1]),
         ('E4',   [0,1,1,1,1,1]),
         ('F4',   [0,0,1,1,1,1]),
@@ -109,8 +90,15 @@ fingerings = {
         ('B5',   [0,0,0,0,0,1]),
         ('C6',   [0,0,0,0,0,0]),
         ('D6',   [1,1,1,1,1,1]),
-    ],
-}
+    ]
+
+def fingerings_with_embouchure(fingerings):
+    return [
+       (note, fingering+[0])
+       for note, fingering in fingerings
+       ]
+    
+    
 
 @config.Float_flag('embextra', 
     'Constant controlling extra effective height of the embouchure hole due to lips, etc. '
@@ -118,15 +106,6 @@ fingerings = {
     'in order to be in tune.')
 class Flute_designer(design.Instrument_designer):
     closed_top = True
-    
-    fingering_system = 'pflute'
-    
-    @property
-    def fingerings(self):
-        return [
-           (note, fingering+[0])
-           for note, fingering in fingerings[self.fingering_system]
-           ]
     
     # 2.5/8 = 0.3    ~ 20 cents flat
     # 5/8 = 0.6      ~ too high
@@ -150,6 +129,8 @@ class Flute_designer(design.Instrument_designer):
     #hole_extra_height_by_diameter = [ 0.0 ] * 6 + [ 0.53 ]
     
     initial_length = design.wavelength('D4') * 0.5
+
+    n_holes = 7
     
     @property
     def initial_hole_fractions(self):
@@ -160,8 +141,24 @@ class Flute_designer(design.Instrument_designer):
 #    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 13.9 ])
 #    max_hole_diameters = design.sqrt_scaler([ 11.4 ] * 6 + [ 10.5 ])
 
-    min_hole_diameters = design.power_scaler(1/3., [ 3.0 ] * 6  + [ 11.3 ])
-    max_hole_diameters = design.power_scaler(1/3., [ 11.4 ] * 6 + [ 11.4 ])
+#    min_hole_diameters = design.power_scaler(1/3., [ 3.0 ] * 6  + [ 11.3 ])
+#    max_hole_diameters = design.power_scaler(1/3., [ 11.4 ] * 6 + [ 11.4 ])
+    
+    @property
+    def min_hole_diameters(self):
+        x = [3.0]*(self.n_holes-1) + [11.3]
+        scale = self.scale ** (1./3)
+        return [ item*scale for item in x ]
+
+    @property
+    def max_hole_diameters(self):
+        x = [11.4]*(self.n_holes-1) + [11.4]
+        scale = self.scale ** (1./3)
+        return [ item*scale for item in x ]
+
+
+    # These assume a six hole flute, and must be overridden on flutes with a different number of holes:
+
     hole_horiz_angles = [0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0]    
 
     divisions = [
@@ -236,7 +233,7 @@ class Tapered_flute(Flute_designer):
     'Design a flute with a recorder-like fingering system.'
     )
 class Design_pflute(Tapered_flute):
-    fingering_system = 'pflute'
+    fingerings = fingerings_with_embouchure(pflute_fingerings)
     balance = [ 0.1, None, None, 0.05 ]    
     #hole_angles = [ -30.0, -30.0, 30.0, -30.0, 30.0, -30.0, 0.0 ]
     #hole_angles = [ 30.0, -30.0, 30.0, 0.0, 0.0, 0.0, 0.0 ]
@@ -245,21 +242,11 @@ class Design_pflute(Tapered_flute):
     max_hole_spacing = design.scaler([ 45.0, 45.0, None, 45.0, 45.0, None ])
 
 
-#@config.help("""\
-#Design a flute with a tapered bore and recorder-like fingering system.
-#""")
-#class Design_tapered_pflute(Tapered_flute, Pflute): pass
-#
-#@config.help("""\
-#Design a flute with a straight bore and recorder-like fingering system.
-#""")
-#class Design_straight_pflute(Straight_flute, Pflute): pass
-
 @config.help(
     'Design a flute with a pennywhistle-like fingering system.'
     )
 class Design_folk_flute(Tapered_flute):
-    fingering_system = 'folk'
+    fingerings = fingerings_with_embouchure(folk_fingerings)
     balance = [ 0.01, None, None, 0.01 ]    
     hole_angles = [ -30.0, 30.0, 30.0,  -30.0, 0.0, 30.0, 0.0 ]
     #min_hole_diameters = design.sqrt_scaler([ 7.5 ] * 6  + [ 12.2 ])
@@ -267,16 +254,6 @@ class Design_folk_flute(Tapered_flute):
     
     max_hole_spacing = design.scaler([ 35.0, 35.0, None, 35.0, 35.0, None ])
 
-#@config.help("""\
-#Design a flute with a tapered bore and pennywhistle-like fingering system.
-#""")
-#class Design_tapered_folk_flute(Tapered_flute, Folk_flute): pass
-#
-#@config.help("""\
-#Design a flute with a straight bore and pennywhistle-like fingering system.
-#""")
-#class Design_straight_folk_flute(Straight_flute, Folk_flute): pass
-#
 
 #
 #class With_tuning_holes(Design_pflute):

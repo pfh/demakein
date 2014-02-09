@@ -376,7 +376,7 @@ def low_high(vec):
     low = [ ]
     high = [ ]
     for item in vec:
-        if isinstance(item, collections.Sequence):
+        if isinstance(item, tuple) or isinstance(item, list):
            assert len(item) == 2
            low.append(item[0])
            high.append(item[1])
@@ -386,7 +386,7 @@ def low_high(vec):
     return low, high
 
 def describe_low_high(item):
-    if isinstance(item, collections.Sequence):
+    if isinstance(item, tuple) or isinstance(item, list):
        return '%.1f->%.1f' % item
     else:
        return '%.1f' % item
@@ -419,7 +419,7 @@ def power_scaler(power, value):
 @config.Float_flag('tweak_emission', 
     'Experimental. '
     'Add a term to the optimization '
-    'to try to make all notes of roughly the same volume, '
+    'to try to make instrument louder, '
     'possibly sacrificing being-in-tuneness.'
     )
 class Instrument_designer(config.Action_with_output_dir):
@@ -691,7 +691,7 @@ class Instrument_designer(config.Action_with_output_dir):
         div = 0.0
 
         emission_score = 0.0
-        emission_score2 = 0.0
+        #emission_score2 = 0.0
         emission_div = 0.0
         
         inst.prepare()
@@ -712,17 +712,17 @@ class Instrument_designer(config.Action_with_output_dir):
                 emission_div += emission_weight
                 _, emission = inst.resonance_score(w2,fingers,True)
                 rms = math.sqrt(sum(item*item for item in emission))
-                x = rms
+                x = math.log(rms)
                 emission_score += emission_weight * x
-                emission_score2 += emission_weight * x * x
+                #emission_score2 += emission_weight * x * x
                             
             
         result = (score/div)**(1.0/3) 
         if self.tweak_emission:
             x = emission_score / emission_div
-            x2 = emission_score2 / emission_div
-            var = x2-x*x
-            result += self.tweak_emission * math.sqrt(var)/x
+            #x2 = emission_score2 / emission_div
+            #var = x2-x*x
+            result += self.tweak_emission * -x #math.sqrt(var)/x
         return result
         
         

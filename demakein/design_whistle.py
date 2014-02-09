@@ -78,6 +78,8 @@ class Design_whistle(design.Instrument_designer_with_bore_scale):
 Design a whistle with pennywhistle fingering.
 """)
 class Design_folk_whistle(Design_whistle):    
+    transpose = 12
+    
     divisions = [
         [(5,0)],
         [(1,0),(5,0)],
@@ -145,6 +147,8 @@ Design a recorder. \
 This is like a penny-whistle, but with a complicated fingering system.
 """)
 class Design_recorder(Design_whistle):
+    transpose = 12
+    
     divisions = [
         [(7,0)],
         [(0,0),(7,0)],
@@ -234,6 +238,8 @@ class Design_recorder(Design_whistle):
 Design a three hole pipe, i.e. the pipe in pipe-and-tabor.
 """)
 class Design_three_hole_whistle(Design_whistle):
+    transpose = 24
+    
     bore_scale = 1.2
     
     divisions = [
@@ -252,6 +258,7 @@ class Design_three_hole_whistle(Design_whistle):
     min_hole_diameters = design.bore_scaler([ 3.0 ]*3)
     max_hole_diameters = design.bore_scaler([ 14.0 ]*3)
     max_hole_spacing = design.scaler([ 100.0, 100.0 ])
+    top_clearance_fraction = 0.6 #Avoid local minimum with holes in center of instrument
     
     hole_angles = [ -30.0, 30.0, 30.0 ]
     horiz_angles = [ 0.0, 0.0, 180.0 ]
