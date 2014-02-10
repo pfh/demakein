@@ -319,7 +319,7 @@ class Miller(config.Configurable):
     res = 40
     
     tool_up = 1.0
-    x_speed = 15.0
+    x_speed = 10.0 #15.0
     y_speed = 7.5
     z_speed = 3.0
     movement_speed = 15.0
