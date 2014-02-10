@@ -18,19 +18,22 @@ MAX_X = 200 * 40 #...
 MAX_Y = 150 * 40 #... slightly more?
 MAX_Z = 2420
 
-def shift(commands, x,y):
+def shift(commands, x,y,v):
     result = [ ]
     for item in commands:
-        if not item.startswith('Z'):
-           result.append(item)
-           continue
-           
-        pos = map(int,item[1:].split(','))
-        pos[0] += x
-        pos[1] += y
-        assert 0 <= pos[0] < MAX_X, 'outside work area on x axis'
-        assert 0 <= pos[1] < MAX_Y, 'outside work area on y axis'
-        result.append('Z%d,%d,%d' % tuple(pos))
+        if item.startswith('Z'):           
+            pos = map(int,item[1:].split(','))
+            pos[0] += x
+            pos[1] += y
+            assert 0 <= pos[0] < MAX_X, 'outside work area on x axis'
+            assert 0 <= pos[1] < MAX_Y, 'outside work area on y axis'
+            result.append('Z%d,%d,%d' % tuple(pos))
+        elif item.startswith('V') and v != 1.0:
+            vel = float(item[1:])
+            vel *= v
+            result.append('V%.1f' % vel)
+        else:
+            result.append(item)
     return result
 
 def execute(commands, port_name,  start_command=0):
@@ -84,12 +87,14 @@ def execute(commands, port_name,  start_command=0):
 @config.String_flag('port')
 @config.Float_flag('x', 'X offset')
 @config.Float_flag('y', 'Y offset')
+@config.Float_flag('v', 'Velocity multiplier')
 @config.Float_flag('percent', 'Start from percent-done')
 class Send(config.Action):
     filename = None
     port = '/dev/ttyUSB0'
     x = 0.0
     y = 0.0
+    v = 1.0
     percent = 0.0
 
     def run(self):
@@ -126,7 +131,7 @@ class Send(config.Action):
         
         execute(commands[:body_start], self.port)
         
-        execute(shift(commands[body_start:],int(self.x*40),int(self.y*40)), 
+        execute(shift(commands[body_start:],int(self.x*40),int(self.y*40),self.v), 
                 self.port, start-body_start)
 
 
