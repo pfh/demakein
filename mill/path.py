@@ -326,7 +326,7 @@ class Miller(config.Configurable):
     
     # Home z axis occasionally
     tool_zreset = 60.0
-    zreset_per = 10
+    zreset_per = 1 #10
     
     bit_radius = 1.5
     bit_ball = False

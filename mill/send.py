@@ -23,6 +23,7 @@ def shift(commands, x,y,v):
     for item in commands:
         if item.startswith('Z'):           
             pos = map(int,item[1:].split(','))
+            #if pos[2] >= 40: pos[2] = 2400
             pos[0] += x
             pos[1] += y
             assert 0 <= pos[0] < MAX_X, 'outside work area on x axis'
