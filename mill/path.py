@@ -325,7 +325,7 @@ class Miller(config.Configurable):
     movement_speed = 15.0
     
     # Home z axis occasionally
-    tool_zreset = 60.0
+    tool_zreset = 60.5
     zreset_per = 1 #10
     
     bit_radius = 1.5
