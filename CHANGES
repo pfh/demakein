@@ -3,6 +3,7 @@
        (Mostly not from the end of the instrument,
         flared ends are largely decorative!)
        Added --tweak-emission flag, but it doesn't work.
+       Add pentatonic_flute.py example.
 
 0.15 - Refinements to three hole whistle.
 

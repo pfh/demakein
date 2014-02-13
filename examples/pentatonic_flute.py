@@ -18,6 +18,11 @@ import demakein, nesoni
 from demakein import design, design_flute
 
 class Design_pentatonic_flute(design_flute.Tapered_flute):
+    # I like to give the designs as tenor-recorder sized
+    # We'll default to actually making a smaller instrument
+    transpose = 12
+    
+    
     n_holes = 5 # including embouchure hole
     
     # The fingerings need to include the open embouchure hole.
@@ -35,8 +40,23 @@ class Design_pentatonic_flute(design_flute.Tapered_flute):
         ]
 
     initial_length = design.wavelength('D4') * 0.5
+    
+    # Holes 1, 2 and 3 should be fairly evenly spaced
+    balance = [ None,    0.1,     None ]
+    #Spacing of holes
+    #           0,1,2    1,2,3    2,3,4      
 
-    hole_horiz_angles = [ 0.0, 5.0, 0.0, 0.0,  0.0 ]    
+    hole_horiz_angles = [ 0.0, 5.0, 0.0, 0.0,  0.0 ] 
+
+    # Ways in which the flute may be jointed
+    divisions = [ 
+         # A single joint above hole 3
+         [ (3, 0.0) ],
+         
+         # A joint halfway between hole 0 and hole 1,
+         # and a joint above hole 3
+         [ (0, 0.5), (3, 0.0) ],
+         ]
 
 
 if __name__ == '__main__':
