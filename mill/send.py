@@ -20,10 +20,11 @@ MAX_Z = 2420
 
 def shift(commands, x,y,v):
     result = [ ]
+    #print '(height hack)'
     for item in commands:
         if item.startswith('Z'):           
             pos = map(int,item[1:].split(','))
-            #if pos[2] >= 40: pos[2] = 2400
+            #if pos[2] >= 40: pos[2] = 2420
             pos[0] += x
             pos[1] += y
             assert 0 <= pos[0] < MAX_X, 'outside work area on x axis'
@@ -49,15 +50,15 @@ def execute(commands, port_name,  start_command=0):
     for i in xrange(start_command,len(commands)):
         command = commands[i]
     
-        char = port.read(1)
-        if char:
-           sys.stdout.write('\nRead: ')
-           while char:
-               sys.stdout.write(char)
-               sys.stdout.flush()
-               char = port.read(1)
-           sys.stdout.write('\n')
-           sys.stdout.flush()
+        #char = port.read(1)
+        #if char:
+        #   sys.stdout.write('\nRead: ')
+        #   while char:
+        #       sys.stdout.write(char)
+        #       sys.stdout.flush()
+        #       char = port.read(1)
+        #   sys.stdout.write('\n')
+        #   sys.stdout.flush()
         
         command = command.strip() + ';\n'
 

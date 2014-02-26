@@ -336,7 +336,7 @@ class Miller(config.Configurable):
     finishing_clearance = 0.0
     finish = True
     
-    minimum_loop = 4.0 #Minimum length of loop to cut, mm
+    minimum_loop = 0.5 #4.0 #Minimum length of loop to cut, mm
     
     @property
     def res_tool_up(self): return int(self.res * self.tool_up + 0.5)
