@@ -238,7 +238,8 @@ class Design_recorder(Design_whistle):
 Design a three hole pipe, i.e. the pipe in pipe-and-tabor.
 """)
 class Design_three_hole_whistle(Design_whistle):
-    transpose = 24
+    tweak_emission = 20.0
+    transpose = 20
     
     bore_scale = 1.2
     

@@ -684,6 +684,13 @@ class Instrument_designer(config.Action_with_output_dir):
         """ Hook to modify instrument before scoring. """
         return inst
     
+    def calc_emission(self, emission, fingers):
+        """ Hook for how to calculate emission. 
+        
+            Lets Flute_designer rate emission relative to embouchure hole.
+            """
+        return math.sqrt(sum(item*item for item in emission))
+    
     def score(self, inst):
         inst = self.patch_instrument(inst)
     
@@ -711,7 +718,8 @@ class Instrument_designer(config.Action_with_output_dir):
                 emission_weight = 1.0 #w1
                 emission_div += emission_weight
                 _, emission = inst.resonance_score(w2,fingers,True)
-                rms = math.sqrt(sum(item*item for item in emission))
+                rms = self.calc_emission(emission, fingers)
+                #math.sqrt(sum(item*item for item in emission))
                 x = math.log(rms)
                 emission_score += emission_weight * x
                 #emission_score2 += emission_weight * x * x

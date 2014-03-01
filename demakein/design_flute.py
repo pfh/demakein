@@ -120,6 +120,12 @@ class Flute_designer(design.Instrument_designer):
         inst = copy.copy(inst)        
         inst.hole_lengths[-1] += inst.hole_diameters[-1] * self.embextra
         return inst
+
+    def calc_emission(self, emission, fingers):
+        """ Emission is relative to embouchure hole
+            ie we assume the amplitude at the embouchure hole is fixed. """
+        return math.sqrt(sum(item*item for item in emission[:-1])) / emission[-1]
+
         
 #    
 #    @property
