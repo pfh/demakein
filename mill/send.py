@@ -45,6 +45,16 @@ def execute(commands, port_name,  start_command=0):
         timeout = 0, #Read timeout
     )
     
+    def check_dsr():
+        t = 10.0
+        while True:
+            try:
+                return port.getDSR()
+            except IOError:
+                print ' IOError '
+                time.sleep(t)
+                t *= 2
+    
     start = time.time()
     #for i, command in enumerate(commands):
     for i in xrange(start_command,len(commands)):
@@ -64,17 +74,17 @@ def execute(commands, port_name,  start_command=0):
 
         #Paranoia
         for j in xrange(3):
-            while not port.getDSR():
+            while not check_dsr():
                 time.sleep(0.01)
             port.write(';\n')
     
         for char in command:
-            while not port.getDSR():
+            while not check_dsr():
                 time.sleep(0.01)
             port.write(char)
     
         delta = int(time.time()-start)
-        sys.stdout.write('\r%3dmin  %3.0f%%' % (
+        sys.stdout.write('\r%3dmin  %3.1f%%' % (
              delta // 60,
              (i+1.0)/len(commands)*100.0
         ))
