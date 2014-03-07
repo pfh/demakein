@@ -305,7 +305,7 @@ def mill_template(xsize, ysize, zsize, dilation):
     
     peg_diameter = 6.0
     block_radius = 4.0
-    hole = shape.prism(min(zsize,peg_diameter*2.0), peg_diameter)   # *3 is too deep
+    hole = shape.prism(min(zsize,peg_diameter*1.5), peg_diameter)   # *3 is too deep
     hole_block = shape.block(-block_radius,block_radius,-block_radius,block_radius,0,zsize)
     hole_packable = Packable([hole_block,hole], 0, 0.0, use_upper=False)
     
