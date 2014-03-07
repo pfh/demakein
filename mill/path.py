@@ -336,6 +336,9 @@ class Miller(config.Configurable):
     finishing_clearance = 0.0
     finish = True
     
+    slow_loop = 12.0 #Cut small loops slowly
+    slow_loop_slowdown = 0.25
+    
     minimum_loop = 0.5 #4.0 #Minimum length of loop to cut, mm
     
     @property
@@ -372,15 +375,22 @@ class Miller(config.Configurable):
         self.drill_points = [ ]
         self.cut_count = 0 #For z reset
 
-    def move_to(self, point, fast=False):
-        self.path.append((point, fast))
+    def move_to(self, point, fast=False, slowdown=1.0):
+        self.path.append((point, fast, slowdown))
 
     def cut_contour(self, z, points, is_exterior, point_score=lambda x,y,z:1):
         """ z and points at res scale """
         
-        if loop_length(points) < self.minimum_loop * self.res:
+        length = loop_length(points)
+        
+        if length < self.minimum_loop * self.res:
             print 'Omit short loop', points
             return
+        
+        if length < self.slow_loop * self.res:
+            slowdown = self.slow_loop_slowdown
+        else:
+            slowdown = 1.0
         
         if is_exterior:
             # Drill as far from previous drill points as possible
@@ -428,8 +438,8 @@ class Miller(config.Configurable):
         self.move_to( (points[0][0],points[0][1],max(0,z+self.res_tool_up)), True )
         
         for x,y in points:
-            self.move_to( (x,y,z), False )
-        self.move_to( (points[0][0],points[0][1],z), False )
+            self.move_to( (x,y,z), False, slowdown )
+        self.move_to( (points[0][0],points[0][1],z), False, slowdown )
         
         
         self.move_to( (points[0][0],points[0][1],self.res_tool_up), True )
@@ -543,7 +553,7 @@ class Miller(config.Configurable):
         move(self.path[0][0])
         pos = self.path[0][0]
         v = None
-        for new_pos, fast in self.path[1:]:
+        for new_pos, fast, slowdown in self.path[1:]:
             if new_pos == pos: continue
             if fast:
                 new_v = self.movement_speed
@@ -556,7 +566,8 @@ class Miller(config.Configurable):
                 dz *= speed_ratio_z
                 dist_stretched = numpy.sqrt(dx*dx+dy*dy+dz*dz)            
                 new_v = self.x_speed * dist_true / dist_stretched
-        
+            new_v *= slowdown
+            
             if v is None or abs(v-new_v) > 0.05:
                 commands.append('V%.1f' % new_v)
                 v = new_v

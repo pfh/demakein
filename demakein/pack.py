@@ -313,26 +313,26 @@ def mill_template(xsize, ysize, zsize, dilation):
     template.put(shift, block_radius,hole_packable)
     template.put(xsize-block_radius*2-shift, block_radius,hole_packable)
 
-    template.put(0,ysize-block_radius*3,hole_packable)
-    template.put(xsize-block_radius*2,ysize-block_radius*3,hole_packable)
+    #template.put(0,ysize-block_radius*3,hole_packable)
+    #template.put(xsize-block_radius*2,ysize-block_radius*3,hole_packable)
     
     return template
 
-def mill_squish(pack):
-    x1, y, hole1 = pack.items.pop(2)
-    x2, y, hole2 = pack.items.pop(2)
-    del pack.masks[2:4]
-    y_new = y
-    step = 1.0
-        
-    y_min = max( item[1]+item[2].extent.ymax for item in pack.items )
-    
-    while y_new-step >= y_min and pack.valid(x1,y_new-step,hole1) and pack.valid(x2,y_new-step,hole2):
-        y_new -= step
-        
-    pack.put(x1,y_new,hole1)
-    pack.put(x2,y_new,hole2)
-    pack.ysize -= y-y_new
+#def mill_squish(pack):
+#    x1, y, hole1 = pack.items.pop(2)
+#    x2, y, hole2 = pack.items.pop(2)
+#    del pack.masks[2:4]
+#    y_new = y
+#    step = 1.0
+#        
+#    y_min = max( item[1]+item[2].extent.ymax for item in pack.items )
+#    
+#    while y_new-step >= y_min and pack.valid(x1,y_new-step,hole1) and pack.valid(x2,y_new-step,hole2):
+#        y_new -= step
+#        
+#    pack.put(x1,y_new,hole1)
+#    pack.put(x2,y_new,hole2)
+#    pack.ysize -= y-y_new
 
 
 def pack(template, packables, aspect_goal=1.0):    
@@ -425,8 +425,8 @@ def cut_and_pack(outer, bore, top_fractions, bottom_fractions, xsize, ysize, zsi
 
     template = mill_template(xsize + pad*2, ysize + pad*2, zsize, dilation)
     packs = pack(template, packables, 0.5*float(ysize)/xsize)
-    for item in packs:
-        mill_squish(item)
+    #for item in packs:
+    #    mill_squish(item)
     
     print 'Rendering'
     
