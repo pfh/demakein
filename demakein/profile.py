@@ -92,6 +92,14 @@ class Profile:
         new_pos = [ item+offset for item in self.pos ]
         return Profile(new_pos, self.low, self.high)
 
+    def appended_with(self, other):
+        other = other.moved(self.pos[-1])
+        return Profile(
+            self.pos[:-1] + other.pos,
+            self.low + other.low[1:],
+            self.high[:-1] + other.high,
+            )
+
     def as_stepped(self, max_step):
         pos = [ ]
         

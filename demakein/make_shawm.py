@@ -29,9 +29,11 @@ class Make_shawm(make.Make_millable_instrument):
     def run(self):
         spec = self.working.spec
         
-        length = spec.length * 0.855 #Reed accounts for part of length, etc
-        # 0.865 was still rather short (Feb 2014)
-        # 0.875 needed a rather short reed (shapeways tenor, November 2012)
+        length = spec.length
+        if spec.do_trim:
+            length *= 0.855 #Reed accounts for part of length, etc
+            # 0.865 was still rather short (Feb 2014)
+            # 0.875 needed a rather short reed (shapeways tenor, November 2012)
         
         #length = spec.inner.pos[-2]
         #assert spec.inner(length) == self.working.designer.bore

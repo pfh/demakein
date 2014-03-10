@@ -1,6 +1,7 @@
 
+import copy
 
-import design
+from . import design, profile
 
 from nesoni import config
 
@@ -64,7 +65,9 @@ def bore_scaler(value):
 
 
 @config.Float_flag('bore', 'Bore diameter at top. (ie reed diameter)')
-class Shawm_designer(design.Instrument_designer):
+class Shawm_designer_OLD(design.Instrument_designer):
+    do_trim = True
+
     transposition = 0    
     bore = 4.0
     
@@ -82,6 +85,53 @@ class Shawm_designer(design.Instrument_designer):
 
 
 
+@config.Float_flag('bore', 'Bore diameter at top. (ie reed diameter)')
+@config.Float_flag('tweak_reed_length', 'Reed length, in units of bore diameter.')
+@config.Float_flag('tweak_reed_tip', 'Reed constricts to this proportion of bore.')
+class Shawm_designer(design.Instrument_designer):
+    do_trim = False
+    
+    tweak_reed_length = 20.0
+    tweak_reed_tip = 0.25 # Ideally this would be zero, but things would explode.
+    
+
+    transposition = 0    
+    bore = 4.0
+    
+    closed_top = True
+    
+#    inner_diameters = bore_scaler([ 35.0, 30.0, 25.0, 20.0, 15.0, 12.0, 9.0, 6.0, 6.0 ])
+    inner_diameters = bore_scaler([ 60.0, 50.0, 40.0, 30.0, 20.0, 15.0, 12.0, 9.0, 6.0, 6.0 ])
+    min_inner_fraction_sep = [ 0.01 ] * 8 + [ 0.015 ]
+
+    @property
+    def initial_inner_fractions(self):
+        d = self.inner_diameters
+        return [ (1.0 - item / d[0])**1.0 for item in d[1:-1] ]
+
+
+#    outer_diameters = bore_scaler([ 75.0, 40.0, 30.0 ])
+    outer_diameters = bore_scaler([ 100.0, 60.0, 30.0 ])
+    min_outer_fraction_sep = [ 0.25, 0.7 ]
+    initial_outer_fractions = [ 0.275 ]
+    outer_angles = [ -10.0, 'up', 'down' ]
+    
+    #max_grad = 10.0
+    
+    def patch_instrument(self, inst):
+        inst = copy.copy(inst)
+        
+        extra_length = self.bore * self.tweak_reed_length
+        extra_inner = profile.make_profile([
+            (0.0, self.bore),
+            (extra_length, self.bore * self.tweak_reed_tip),
+            ])
+        
+        inst.length += extra_length
+        inst.inner = inst.inner.appended_with(extra_inner)
+        inst.outer = inst.outer.clipped(0.0, inst.length)
+        return inst
+
 
 
 @config.help("""\
@@ -92,7 +142,8 @@ The flare at the end is purely decorative.
 """)
 class Design_shawm(Shawm_designer):        
     min_hole_diameters = bore_scaler([ 5.25 ] * 8)
-    max_hole_diameters = bore_scaler([ 12.0 ] * 8)
+#    max_hole_diameters = bore_scaler([ 12.0 ] * 8)
+    max_hole_diameters = bore_scaler([ 16.0 ] * 8)
     
     initial_hole_diameter_fractions = [0.25]*8    
     initial_hole_fractions = [ 0.5-0.06*i for i in [6,5,4,3,2,1,0,0] ]
@@ -235,7 +286,8 @@ class Design_folk_shawm(Shawm_designer):
 #    outer_diameters = bore_scaler([ 10.0, 8.0 ])
 
     min_hole_diameters = bore_scaler([ 3.0 ] * 6)
-    max_hole_diameters = bore_scaler([ 12.0 ] * 6)
+#    max_hole_diameters = bore_scaler([ 12.0 ] * 6)
+    max_hole_diameters = bore_scaler([ 16.0 ] * 6)
     
     #initial_hole_diameter_fractions = inrange(0.5,0.0,6)    
     initial_hole_fractions = [ 0.5-0.06*i for i in range(5,-1,-1) ]
@@ -271,9 +323,20 @@ class Design_folk_shawm(Shawm_designer):
         ('G5',  [0,0,0,1,1,1]),
         ('A5',  [0,0,0,0,1,1]),
         ('B5',  [0,0,0,0,0,1]),
-        #('C#6', [0,0,0,0,0,0, 0]),
+        ('C#6', [0,0,0,0,0,0]),
         ('D6',  [1,1,1,1,1,1]),
         
+
+
+        #('D4*3',  [1,1,1,1,1,1]),
+        #('E4*3',  [0,1,1,1,1,1]),
+        #('F#4*3', [0,0,1,1,1,1]),
+        #('G4*3',  [0,0,0,1,1,1]),
+        #('A4*3',  [0,0,0,0,1,1]),
+        #('B4*3',  [0,0,0,0,0,1]),
+        #('C#5*3', [0,0,0,0,0,0]),
+
+
         #More harmonics of basic horn
       #  ('D4*3',  [1,1,1,1,1,1]),
       #  ('D4*4',  [1,1,1,1,1,1]),
