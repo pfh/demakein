@@ -20,7 +20,7 @@ def bore_scaler(value):
 #@config.Float_flag('bore', 'Bore diameter at top. (ie reed diameter)')
 #class Shawm_designer(design.Instrument_designer):
 #    transposition = 0    
-#    bore = 4.0
+#    bore = 5.0
 #    
 #    closed_top = True
 #    
@@ -69,7 +69,7 @@ class Shawm_designer_OLD(design.Instrument_designer):
     do_trim = True
 
     transposition = 0    
-    bore = 4.0
+    bore = 5.0
     
     closed_top = True
     
