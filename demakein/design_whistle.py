@@ -29,11 +29,13 @@ class Design_whistle(design.Instrument_designer_with_bore_scale):
     # tweak_gapextra = 0.37
     
     # From soprano recorder
-    tweak_gapextra = 0.75 #0.71
-    #tweak_bulgediameter = 1.0
-    #tweak_bulgepos1 = 0.5
-    #tweak_bulgepos2 = 0.9
-    tweak_boreless = 0.65 #0.49
+    #tweak_gapextra = 0.75 #0.71
+    #tweak_boreless = 0.65 #0.49
+    
+    # From 2014-15-whistle-tweaking
+    tweak_gapextra = 0.6
+    tweak_boreless = 0.3
+    bore_scale = 1.1
     
     xpad = 0.0
     ypad = 0.0
@@ -74,22 +76,20 @@ class Design_whistle(design.Instrument_designer_with_bore_scale):
         return inst
 
 
-@config.help("""\
-Design a whistle with pennywhistle fingering.
-""")
-class Design_folk_whistle(Design_whistle):    
+class Six_hole_whistle_designer(Design_whistle):    
+    """ Abstract base class for folk and dorian whistles. """
+
     transpose = 12
     
     divisions = [
         [(5,0)],
         [(1,0),(5,0)],
-        [(1,0),(5,0),(5,0.5)],
+        [(1,0),(5,0),(5,0.5)],        
+        [(-1,0.75),(1,0.0),(2,1.0),(5,0.0),(5,0.3),(5,0.6)],
         ]
     
-    initial_length = design.wavelength('D4') * 0.5
-    
     min_hole_diameters = design.bore_scaler([ 3.0 ]*6)
-    max_hole_diameters = design.bore_scaler([ 12.0 ]*6)
+    max_hole_diameters = design.bore_scaler([ 12.0 ]*6, maximum=12.0)
     
     horiz_angles = [ 0.0 ] * 6
     #mid_cut = 3
@@ -121,6 +121,12 @@ class Design_folk_whistle(Design_whistle):
     
     #min_outer_fraction_sep = [ 0.01, 0.5 ]
 
+@config.help("""\
+Design a whistle with pennywhistle fingering.
+""")
+class Design_folk_whistle(Six_hole_whistle_designer):    
+    initial_length = design.wavelength('D4') * 0.5
+    
     fingerings = [
         ('D4',   [1,1,1,1,1,1]),
         ('E4',   [0,1,1,1,1,1]),
@@ -138,6 +144,30 @@ class Design_folk_whistle(Design_whistle):
         ('B5',   [0,0,0,0,0,1]),
         #('C#6',  [1,1,1,0,0,0]),
         #('C#6',  [0,0,0,0,0,0]),
+        ('D6',   [1,1,1,1,1,1]),
+    ]
+
+@config.help("""\
+Design a whistle that plays a dorian scale.
+""")
+class Design_dorian_whistle(Six_hole_whistle_designer):    
+    initial_length = design.wavelength('D4') * 0.5
+    
+    fingerings = [
+        ('D4',   [1,1,1,1,1,1]),
+        ('E4',   [0,1,1,1,1,1]),
+        ('F4',   [0,0,1,1,1,1]),
+        ('G4',   [0,0,0,1,1,1]),
+        ('A4',   [0,0,0,0,1,1]),
+        ('Bb4',  [0,0,1,1,0,1]),
+        ('B4',   [0,0,0,0,0,1]),
+        ('C5',   [0,0,0,0,0,0]),
+        ('D5',   [1,1,1,1,1,0]),
+        ('E5',   [0,1,1,1,1,1]),
+        ('F5',   [0,0,1,1,1,1]),
+        ('G5',   [0,0,0,1,1,1]),
+        ('A5',   [0,0,0,0,1,1]),
+        ('B5',   [0,0,0,0,0,1]),
         ('D6',   [1,1,1,1,1,1]),
     ]
 

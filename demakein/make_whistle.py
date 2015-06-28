@@ -245,7 +245,31 @@ class Make_whistle(make.Make_millable_instrument):
              bore_extras = [ whistle_inner ],
              )
         
-        self.make_parts(up = True)
+        if not self.mill:
+            extra_packables = [ ]
+        else:
+            whistle_jaw = whistle_jaw_clipper.copy()
+            whistle_jaw.clip(self.working.outside)
+            whistle_jaw.remove(self.working.bore)
+            #whistle_jaw_space = whistle_jaw_clipper.copy()
+            #whistle_jaw_space.clip(self.working.bore)
+            whistle_jaw_space = self.working.bore.copy()
+            
+            whistle_jaw.rotate(1,0,0, 90)
+            whistle_jaw_space.rotate(1,0,0, 90)
+            
+            offset = -whistle_jaw.extent().zmin
+            whistle_jaw.move(0,0,offset)
+            whistle_jaw_space.move(0,0,offset)
+            
+            self.save(whistle_jaw, 'jaw')
+            jaw_packable = [ pack.Packable([ whistle_jaw, whistle_jaw_space ], 90, self.mill_diameter) ]
+            
+            self.working.bore.add(whistle_jaw_clipper)
+            self.working.outside.remove(whistle_jaw_clipper)
+            extra_packables = [ jaw_packable ]
+        
+        self.make_parts(up = True, extra_packables = extra_packables)
 
         #true_length = self.working.instrument.extent().zmax
         #

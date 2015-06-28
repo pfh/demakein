@@ -41,7 +41,7 @@ class Tune(config.Action_with_working_dir):
         instrument = mod.patch_instrument(
             mod.unpack(self.working.designer.state_vec)
             )
-        instrument.prepare()
+        instrument.prepare_phase()
         
         errors = [ ]
         
@@ -51,7 +51,7 @@ class Tune(config.Action_with_working_dir):
             assert len(parts) == (mod.n_holes+1)
             fingers = [ int(item2) for item2 in parts[1:] ]
             w_obtained = design.SPEED_OF_SOUND / float(parts[0])
-            w_expected, grad = instrument.true_wavelength_near(w_obtained, fingers, mod.max_grad)
+            w_expected = instrument.true_wavelength_near(w_obtained, fingers)
 
             errors.append( (math.log(w_obtained)-math.log(w_expected))*s )
     
@@ -63,14 +63,14 @@ class Tune(config.Action_with_working_dir):
         return (sum( abs(item**p) for item in errors ) / max(1,len(errors)))**(1.0/p)
     
     def _report(self, state, etc=[]):        
-        for error, observation in zip(self._errors(state),self.observations):
-            print '%6.1f cents  %s' % (error, observation)
-        
         print
-        
         for name, value in zip(self.working.parameters, state):
             print '%s %.3f' % (name, value)
-        
+        print
+        for error, observation in zip(self._errors(state),self.observations):
+            print '%6.1f cents  %s' % (error, observation)
+        print '--------------'        
+        print '%6.1f score' % self._score(state)
         print
     
     def run(self):
@@ -79,9 +79,17 @@ class Tune(config.Action_with_working_dir):
         self.working.parameters = [ ]
         
         for item in self.tweak.split(','):
+            fixed = '=' in item
+            if fixed:
+                item, value = item.split('=')
+                value = float(value)
+            
             for item2 in self.working.designer.parameters:
                 if item2.shell_name().lstrip('-') == item.lstrip('-'):
-                    self.working.parameters.append(item2.name)
+                    if fixed:
+                        self.working.designer = self.working.designer(**{item2.name:value})
+                    else:
+                        self.working.parameters.append(item2.name)
                     break
             else:
                 assert False, 'Unknown parameter: %s' % item
@@ -90,16 +98,21 @@ class Tune(config.Action_with_working_dir):
             getattr(self.working.designer,item)
             for item in self.working.parameters
             ]
+
+        print 'Current model and errors:'        
+        self._report(initial)
         
-        state = optimize.improve(
-            self.shell_name(), 
-            self._constraint_score, 
-            self._score, 
-            initial,
-            monitor=self._report
-            )
-        
-        self._report(state)
+        if self.parameters:
+            state = optimize.improve(
+                self.shell_name(), 
+                self._constraint_score, 
+                self._score, 
+                initial,
+                #monitor=self._report
+                )
+            
+            print 'Optimized model and errors:'
+            self._report(state)
         
         
         

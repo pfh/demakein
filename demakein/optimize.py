@@ -36,14 +36,17 @@ def make_update(vecs, initial_accuracy, do_noise):
     #    for i in xrange(m) 
     #    ]
 
-    weight_weight = (1.25+random.random()) / (n**0.5)
+    #weight_weight = (1.25+random.random()) / (n**0.5)
+    weight_weight = (1.0+2.0*random.random()) / (n**0.5)
+    #weight_weight = (1.0) / (n**0.5)
     weights = [ 
         random.normalvariate(0.0, weight_weight) 
         for i in xrange(n) 
         ]
     
-    offset = (1.0-sum(weights)) / n
+    offset = (0.0-sum(weights)) / n
     weights = [ weight+offset for weight in weights ]
+    weights[ random.randrange(n) ] += 1.0
     
     update = [ 
         sum( vecs[j][i]*weights[j] for j in xrange(n) )
@@ -93,7 +96,7 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
         i = 0
         jobs = [ ]
         
-        pool_size = int(len(best)*5)
+        pool_size = int(len(best)*5) #5
         print len(best),'parameters, pool size', pool_size
 
         currents = [ (best, best_score) ]

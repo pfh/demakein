@@ -39,6 +39,9 @@ semitone = {
 
 
 def fqc(note):
+    if note[-2:].lower() == "hz":
+        return float(note[:-2])
+
     if '*' in note:
         note, mult = note.split('*')
         mult = float(mult)
@@ -88,38 +91,14 @@ def circle_area(diameter):
     radius = diameter*0.5
     return math.pi * radius * radius
 
+
+
+# ================================================
+# Unit magnitude complex number to represent phase
+
 def pipe_reply(reply_end, length_on_wavelength):
     angle = FOUR_PI*length_on_wavelength
     return complex(math.cos(angle),math.sin(angle)) * reply_end
-
-#
-#def junction_reply(area, areas, replies):
-#    total_area = area + sum(areas)
-#    
-#    return area / (total_area*(0.5 - sum( a/(total_area*(1.0/r+1.0)) for a,r in zip(areas, replies) ))) - 1.0
-#    
-#    #Equivalently?
-#    #x = area / (total_area*(0.5 - sum( a/(total_area*(r+1.0)) for a,r in zip(areas, replies) ))) - 1.0
-#    #return 1/x
-#
-#
-#def junction2_reply(area, area1, reply1):
-#    total_area = area + area1
-#    
-#    return area / (total_area*(0.5 - area1/(total_area*(1.0/reply1+1.0)))) - 1.0
-#
-#
-#def junction3_reply(area, area1, area2, reply1, reply2):
-#    total_area = area + area1 + area2
-#    
-#    return area / (total_area*(
-#        0.5 
-#        - area1/(total_area*(1.0/reply1+1.0))
-#        - area2/(total_area*(1.0/reply2+1.0))
-#    )) - 1.0
-#
-
-
 
 def junction2_reply(a0, a1, r1):
     """ Relative phase reply for pipe 0 of two pipe junction
@@ -130,7 +109,6 @@ def junction2_reply(a0, a1, r1):
     mag1 = abs( pjunc / (r1+1.0) )    
     return pjunc-1.0, mag1
 
-
 def junction3_reply(a0,a1,a2, r1,r2):
     """ Relative phase reply for pipe 0 of three pipe junction
         with pipe cross section areas a0, a1 and a2
@@ -140,6 +118,29 @@ def junction3_reply(a0,a1,a2, r1,r2):
     mag1 = abs( pjunc / (r1+1.0) )
     mag2 = abs( pjunc / (r2+1.0) )
     return pjunc-1.0, mag1, mag2
+
+# ===================================
+# Phase in [0,1] plus number of nodes
+
+def pipe_reply_phase(phase_end, length_on_wavelength):
+    return phase_end + length_on_wavelength * 2.0
+
+def tanner(phase):
+    x = phase*math.pi
+    return math.tan(x)
+    
+def untanner(x):
+    return math.atan(x)/math.pi
+
+def junction2_reply_phase(a0, a1, p1):
+    shift = math.floor(p1+0.5)
+    return untanner(a1/a0 * tanner(p1-shift)) + shift
+
+def junction3_reply_phase(a0,a1,a2, p1,p2):
+    shift1 = math.floor(p1+0.5)
+    shift2 = math.floor(p2+0.5)
+    return untanner(a1/a0*tanner(p1-shift1) + a2/a0*tanner(p2-shift2)) + shift1 + shift2
+
 
 
 
@@ -307,13 +308,97 @@ class Instrument:
         else:
             return result, emission
     
+
+
+    # phase version
+    # =============
+    def prepare_phase(self):
+        self.stepped_inner = self.inner.as_stepped(self.cone_step)
+    
+        events = [
+            (self.length, 'end', None)
+        ]
         
-    def true_wavelength_near(self, w, fingers, max_grad, step_cents = 1.0, step_increase = 1.05, max_steps = 100):
+        for i, pos in enumerate(self.stepped_inner.pos):
+            if 0.0 < pos < self.length:
+                events.append((pos, 'step', i))
+        
+        for i, pos in enumerate(self.inner_hole_positions):
+            events.append((pos,'hole', i))
+        
+        events.sort(key=lambda item: item[0])
+    
+        self.actions_phase = [ ]
+        
+        position = -end_flange_length_correction(self.outer(0.0,True),self.stepped_inner(0.0,True))
+        diameter = self.stepped_inner(0.0, True)
+        for pos, action, index in events:
+            length = pos-position
+            
+            def func(phase_end, wavelength, fingers, length=length):
+                return pipe_reply_phase(phase_end, length/wavelength)
+            self.actions_phase.append(func)
+            
+            position = pos
+            
+            if action == 'step':
+                assert diameter == self.stepped_inner.low[index]
+                area1 = circle_area(diameter)
+                diameter = self.stepped_inner.high[index]
+                area = circle_area(diameter)
+                
+                def func(phase, wavelength, fingers, area=area, area1=area1):
+                    return junction2_reply_phase(area, area1, phase)
+                self.actions_phase.append(func)
+                
+            elif action == 'hole':
+                area = circle_area(diameter)
+                hole_diameter = self.hole_diameters[index]
+                hole_area = circle_area(hole_diameter)
+                
+                #true_length = (self.outer(position) - diameter) * 0.5 
+                #true_length += self.hole_extra_heights[index]
+                #true_length += self.hole_extra_height_by_diameter[index] * hole_diameter                
+                true_length = self.hole_lengths[index]
+                
+                open_length = true_length + hole_length_correction(hole_diameter, diameter, False) 
+                closed_length = true_length + hole_length_correction(hole_diameter, diameter, True)
+
+                def func(phase, wavelength, fingers,
+                         area=area,hole_area=hole_area,
+                         open_length=open_length,closed_length=closed_length,
+                         index=index):
+                    if fingers[index]:
+                        hole_phase = pipe_reply_phase(0.0, closed_length/wavelength)
+                    else:
+                        hole_phase = pipe_reply_phase(-0.5, open_length/wavelength)
+                    return junction3_reply_phase(area, area, hole_area, phase, hole_phase)
+                    
+                self.actions_phase.append(func)
+
+    def resonance_phase(self, w, fingers):
+        """ score % 1 == 0 if wavelength w resonantes """
+        phase = 0.5 #Open end
+        
+        for action in self.actions_phase:
+            phase = action(phase, w, fingers)
+        
+        if not self.closed_top: phase += 0.5
+        
+        return phase
+
+        
+    def true_wavelength_near(self, w, fingers, step_cents = 1.0, step_increase = 1.05, max_steps = 100):
+        #def scorer(probe):
+        #    return self.resonance_score(probe,fingers)
+        def scorer(probe):
+            return (self.resonance_phase(probe,fingers)+0.5)%1.0-0.5
+        
         step = pow(2.0, step_cents/1200.0)
         
         half_step = math.sqrt(step)
         probes = [ w/half_step, w*half_step ]
-        scores = [ self.resonance_score(probe,fingers) for probe in probes ]
+        scores = [ scorer(probe) for probe in probes ]
         
         def evaluate(i):
             y1 = scores[i]
@@ -325,33 +410,31 @@ class Instrument:
             c = y1-m*x1
             intercept = -c/m
             
-            grad = -m*intercept
-            if grad > max_grad: return None
+            #grad = -m*intercept
+            #if grad > max_grad: return None
             
             #assert x1 <= intercept <= x2, '%f %f %f' % (x1,intercept,x2)
-            return intercept, grad
+            return intercept
         
         for iteration in range(max_steps):
             if scores[-2] >= 0 and scores[-1] < 0:
-                result = evaluate(len(scores)-2)
-                if result is not None: return result
+                return evaluate(len(scores)-2)
             
             probes.insert(0, probes[0]/step)
-            scores.insert(0, self.resonance_score(probes[0],fingers))
+            scores.insert(0, scorer(probes[0]))
             
             if scores[0] >= 0 and scores[1] < 0:
-                result = evaluate(0)
-                if result is not None: return result
+                return evaluate(0)
 
             probes.append(probes[-1]*step)
-            scores.append(self.resonance_score(probes[-1],fingers))
+            scores.append(scorer(probes[-1]))
         
             step **= step_increase
         else:
             if abs(scores[-1]) < abs(scores[0]):
-                return probes[-1], 0.0
+                return probes[-1]
             else:
-                return probes[0], 0.0
+                return probes[0]
         
         # y = mx + c
                 
@@ -370,6 +453,52 @@ class Instrument:
         #b = 0.5*(scores[best+1]-scores[best-1])
         #a = scores[best+1]-c-b
         #return low*pow(step, best-b*0.5/a)
+
+
+    #TODO: Make efficient
+    def true_nth_wavelength_near(self, w, fingers, n, step_cents = 1.0, step_increase = 1.5, max_steps = 20):
+        def scorer(probe):
+            return self.resonance_phase(probe,fingers) - n
+
+        step = pow(2.0, step_cents/1200.0)
+        
+        half_step = math.sqrt(step)
+        probes = [ w/half_step, w*half_step ]
+        scores = [ scorer(probe) for probe in probes ]
+        
+        def evaluate(i):
+            y1 = scores[i]
+            x1 = probes[i]
+            y2 = scores[i+1]
+            x2 = probes[i+1]
+            
+            m = (y2-y1)/(x2-x1)
+            c = y1-m*x1
+            intercept = -c/m
+            return intercept
+        
+        for iteration in range(max_steps):
+            if scores[-2] >= 0 and scores[-1] < 0:
+                return evaluate(len(scores)-2)
+            
+            if scores[0] <= 0:
+                probes.insert(0, probes[0]/step)
+                scores.insert(0, scorer(probes[0]))
+            
+            if scores[0] >= 0 and scores[1] < 0:
+                return evaluate(0)
+
+            if scores[-1] >= 0:
+                probes.append(probes[-1]*step)
+                scores.append(scorer(probes[-1]))
+        
+            step **= step_increase
+        else:
+            if abs(scores[-1]) < abs(scores[0]):
+                return probes[-1]
+            else:
+                return probes[0]
+        
 
 
 def low_high(vec):
@@ -434,6 +563,7 @@ class Instrument_designer(config.Action_with_output_dir):
     tweak_emission = 0.0
     
     initial_length = None
+    max_length = None
 
     fingerings = [ ]
     
@@ -495,6 +625,16 @@ class Instrument_designer(config.Action_with_output_dir):
         return [ 1.0 ] * (len(self.inner_diameters)-1)
 
     @property
+    def min_inner_sep(self):
+        return [ None ] * (len(self.inner_diameters)-1)
+
+    @property
+    def max_inner_sep(self):
+        return [ None ] * (len(self.inner_diameters)-1)
+
+
+
+    @property
     def initial_outer_fractions(self):
         return [ (i+1.0)/(len(self.outer_diameters)-1) for i in xrange(len(self.outer_diameters)-2) ]
 
@@ -544,13 +684,6 @@ class Instrument_designer(config.Action_with_output_dir):
             self.initial_outer_fractions
         )
 
-    #
-    #Sometimes there are tiny glitches in the response curve
-    #that aren't really playable or desirable solutions
-    #
-    #Set this small enough to forbid them (see the grad numbers in the .SVG output)
-    #
-    max_grad = 1e30
 
     def unpack(self, state_vec):
         inner_low, inner_high = low_high(self.inner_diameters)
@@ -627,6 +760,9 @@ class Instrument_designer(config.Action_with_output_dir):
         
         scores.append(inst.length)
         
+        if self.max_length is not None:
+            scores.append(self.max_length*self.scale - inst.length)
+        
         inners = [0.0]+inst.inner_kinks+[inst.length]
         for i in range(len(inners)-1):
             sep = inners[i+1]-inners[i]
@@ -634,6 +770,11 @@ class Instrument_designer(config.Action_with_output_dir):
             scores.append(check)
             check = self.max_inner_fraction_sep[i]*inst.length - sep
             scores.append(check)
+            
+            if self.min_inner_sep[i] is not None:
+                scores.append(sep - self.min_inner_sep[i]*self.scale)
+            if self.max_inner_sep[i] is not None:
+                scores.append(self.max_inner_sep[i]*self.scale - sep)
         
         outers = [0.0]+inst.outer_kinks+[inst.length]
         for i in range(len(outers)-1):
@@ -701,18 +842,37 @@ class Instrument_designer(config.Action_with_output_dir):
         #emission_score2 = 0.0
         emission_div = 0.0
         
-        inst.prepare()
+        if self.tweak_emission:
+            inst.prepare()
+        inst.prepare_phase()
         
         s = 1200.0/math.log(2)
-        for note, fingers in self.fingerings:
+        for item in self.fingerings:
+            note = item[0]
+            fingers = item[1]
+        
             w1 = wavelength(note, self.transpose)
-            w2, grad = inst.true_wavelength_near(w1, fingers, self.max_grad)
+            
+            if len(item) < 3:
+                w2 = inst.true_wavelength_near(w1, fingers)
+            else:
+                w2 = inst.true_nth_wavelength_near(w1, fingers, item[2])
+            
             diff = abs(math.log(w1)-math.log(w2))*s
+                                              
             #weight = w1
             weight = 1.0
             #score += weight * diff**3 / (1.0 + (diff/20.0)**2)
             score += weight * diff**3
             div += weight
+
+            #score += (max(0.0,inst.resonance_score(w2/2.0, fingers)) * 1000.0)**3
+            #diff += max(0.0,inst.resonance_score(w2/3.0, fingers)) * 100.0
+            #diff += max(0.0,inst.resonance_score(w2/4.0, fingers)) * 100.0
+            #if inst.resonance_score(w2/3.0, fingers) < 0.0:
+            #    diff += 100.0
+            #if inst.resonance_score(w2/4.0, fingers) < 0.0:
+            #    diff += 100.0
                         
             if self.tweak_emission:
                 emission_weight = 1.0 #w1
@@ -791,6 +951,7 @@ class Instrument_designer(config.Action_with_output_dir):
 
         patched_instrument = self.patch_instrument(self.instrument)
         patched_instrument.prepare()
+        patched_instrument.prepare_phase()
         
       #  #any_extra = any( item != 0.0 for item in self.hole_extra_height_by_diameter )
       #  #if any_extra:
@@ -843,9 +1004,15 @@ class Instrument_designer(config.Action_with_output_dir):
         emit_x = graph_x+220
         text_y = 0
         
-        for note, fingers in self.fingerings:
+        for item in self.fingerings:
+            note = item[0]
+            fingers = item[1]
+        
             w1 = wavelength(note, self.transpose)
-            w2, grad = patched_instrument.true_wavelength_near(w1, fingers, self.max_grad)
+            if len(item) < 3:
+                w2 = patched_instrument.true_wavelength_near(w1, fingers)
+            else:
+                w2 = patched_instrument.true_nth_wavelength_near(w1, fingers, item[2])
             cents = int(round( log2(w2/w1) * 1200.0 ))
 
             n_probes = 301
@@ -854,27 +1021,44 @@ class Instrument_designer(config.Action_with_output_dir):
             step = pow(0.5, max_cents/((n_probes-1)*0.5*1200.0))
             low = w1 * pow(step, -(n_probes-1)/2.0)
             probes = [ low * pow(step,i) for i in range(n_probes) ]
-            scores = [ patched_instrument.resonance_score(probe, fingers) for probe in probes ]
+            #scores = [ patched_instrument.resonance_score(probe, fingers) for probe in probes ]
+            #
+            #points = [ (graph_x+i*width/n_probes,text_y-score*7.0)
+            #           for i,score in enumerate(scores) ]
+            #for i in range(len(probes)-1):
+            #    if scores[i] > 0 and scores[i+1] < 0: continue
+            #    diagram.line(points[i:i+2], '#000000', 0.2)
 
-            points = [ (graph_x+i*width/n_probes,text_y-score*7.0)
+
+            scores = [ patched_instrument.resonance_phase(probe, fingers) for probe in probes ]
+
+            points = [ (graph_x+i*width/n_probes,text_y-(((score+0.5)%1.0)-0.5)*14.0)
                        for i,score in enumerate(scores) ]
             for i in range(len(probes)-1):
-                if scores[i] > 0 and scores[i+1] < 0: continue
-                diagram.line(points[i:i+2], '#000000', 0.2)
+                c = math.floor(scores[i]+0.5) 
+                if c != math.floor(scores[i+1]+0.5): continue
+                r,g,b = [ int((math.cos((c/5.0+offset) * math.pi*2.0)*0.5+0.5) * 200) 
+                          for offset in [0.0,1.0/3,2.0/3] ]
+                diagram.line(points[i:i+2], '#%02x%02x%02x' % (r,g,b), 0.2)
+
+
             diagram.line([(graph_x+width*0.5,text_y+7),(graph_x+width*0.5,text_y-7)], '#0000ff', 0.2)
             diagram.line([(graph_x,text_y),(graph_x+width,text_y)], '#0000ff', 0.2)
 
             diagram.text(text_x, text_y,
-                  '%5s %s %-4d cents grad=%.1f' % (describe(w1), '     ' if cents == 0 else ' flat' if cents > 0 else 'sharp', abs(cents), grad)
+                  '%5s %s %-4d cents' % (describe(w1), '     ' if cents == 0 else ' flat' if cents > 0 else 'sharp', abs(cents))
             )
             
-            _, emission = patched_instrument.resonance_score(w2,fingers,True)
-            diagram.text(emit_x, text_y,
-                 ', '.join('%.2f' % item for item in emission)
-                 )
+            #_, emission = patched_instrument.resonance_score(w2,fingers,True)
+            #diagram.text(emit_x, text_y,
+            #     ', '.join('%.2f' % item for item in emission)
+            #     )
+            
+            phase = patched_instrument.resonance_phase(w2,fingers)
+            diagram.text(emit_x, text_y, "%f" % phase)
             
             #if any_extra:
-            #w3, grad3 = mod_instrument.true_wavelength_near(w1, fingers, self.max_grad)
+            #w3 = mod_instrument.true_wavelength_near(w1, fingers)
             #cents3 = int(round( log2(w3/w1) * 1200.0 ))
             #diagram.text(graph_x + width, text_y,
             #      '%s %-4d cents grad=%.1f diff=%d' % ('     ' if cents3 == 0 else ' flat' if cents3 > 0 else 'sharp', abs(cents3), grad3, cents3-cents)
@@ -888,11 +1072,11 @@ class Instrument_designer(config.Action_with_output_dir):
             color='#000000'
             )
         
-        diagram.text(emit_x, text_y - 20,
-            'Volume of sound emission from\n'
-            'instrument end and open holes:',
-            color='#000000',
-            )
+        #diagram.text(emit_x, text_y - 20,
+        #    'Volume of sound emission from\n'
+        #    'instrument end and open holes:',
+        #    color='#000000',
+        #    )
             
             
         
@@ -935,11 +1119,11 @@ class Instrument_designer(config.Action_with_output_dir):
         #print(self._opt_score(state_vec))
 
 
-def bore_scaler(value):
+def bore_scaler(value, maximum=1e30):
     @property
     def func(self):
         scale = math.sqrt(self.scale) * self.bore_scale
-        return [ item*scale if item is not None else None for item in value ]
+        return [ min(item*scale, maximum) if item is not None else None for item in value ]
     return func
 
 @config.Float_flag('bore_scale',

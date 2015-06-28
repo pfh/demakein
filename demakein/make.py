@@ -112,11 +112,16 @@ class Working(object): pass
 @config.Bool_flag('thick_sockets',
     'Add some extra thickness around sockets.'
     )
+@config.Float_flag('dilate',
+    'Increase bore diameter by this much. '
+    'Use if your 3D printer is poorly calibrated on concave curves.'
+    )
 class Make_instrument(config.Action_with_working_dir, Make_base):
     gap = 0.2
     fingerpads = False
     join = 'weld'
     thick_sockets = False
+    dilate = 0.0
     prefix = ''
 
     def _before_run(self):
@@ -165,7 +170,7 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
              outside_extras = [], bore_extras = []):
         outside = shape.extrude_profile(outer_profile)
         instrument = outside.copy()        
-        bore = shape.extrude_profile(inner_profile)
+        bore = shape.extrude_profile(inner_profile + self.dilate)
                       
         for i, pos in enumerate(hole_positions):
             angle = hole_vert_angles[i]
@@ -465,13 +470,13 @@ class Make_millable_instrument(Make_instrument):
     mill_width = 130.0
     mill_thickness = 19.0
     
-    def make_parts(self, up=False, flip_top=False):
+    def make_parts(self, up=False, flip_top=False, extra_packables=[ ]):
         if self.mill:
-            self.make_workpieces()
+            self.make_workpieces(extra_packables)
         else:
             self.make_segments(up, flip_top)
     
-    def make_workpieces(self):
+    def make_workpieces(self, extra_packables=[ ]):
         length = self.working.top
         cuts = sorted(set( item/length for scheme in self.get_cuts() for item in scheme ))
         upper_segments, lower_segments = pack.plan_segments(cuts, self.mill_length / length)
@@ -483,7 +488,9 @@ class Make_millable_instrument(Make_instrument):
             zsize=self.mill_thickness,
             bit_diameter=self.mill_diameter,
             save=self.save,
-        )
+            
+            extra_packables=extra_packables,
+            )
         
 
 
