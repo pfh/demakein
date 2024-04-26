@@ -30,7 +30,13 @@ CODE = r"""
 //typedef CGAL::Extended_homogeneous<CGAL::Gmpz>            Kernel;
 //typedef CGAL::Cartesian<CGAL::Gmpq>                       Kernel;
 //typedef CGAL::Homogeneous<CGAL::Gmpz>                     Kernel;
-typedef CGAL::Simple_homogeneous<CGAL::Gmpz>                Kernel;
+
+//2024-04-27 Formerly this worked:
+//typedef CGAL::Simple_homogeneous<CGAL::Gmpz>                Kernel;
+
+//2024-04-27 This is now needed (Ubuntu 22.04.4, libcgal 5.4-1): 
+typedef CGAL::Simple_cartesian<CGAL::Gmpq>                Kernel;
+
 
 typedef Kernel::Point_3                                   Point_3;
 typedef Kernel::Vector_3                                  Vector_3;

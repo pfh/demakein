@@ -1,4 +1,4 @@
-VERSION = '0.16'
+VERSION = '0.17'
 
 from .design_flute import Design_pflute, Design_folk_flute
 from .make_flute import Make_flute

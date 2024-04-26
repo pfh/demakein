@@ -1,4 +1,8 @@
 
+0.17 - 2024-04-27
+       Changed kernel in cgal.py to `CGAL::Simple_cartesian<CGAL::Gmpq>`
+       to get rid of compilation errors.
+
 0.16 - Design svg now shows where the sound comes out.
        (Mostly not from the end of the instrument,
         flared ends are largely decorative!)
