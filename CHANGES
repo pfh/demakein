@@ -1,4 +1,7 @@
 
+0.18 - 2024-04-27
+       Add long description.
+
 0.17 - 2024-04-27
        Changed kernel in cgal.py to `CGAL::Simple_cartesian<CGAL::Gmpq>`
        to get rid of compilation errors.
