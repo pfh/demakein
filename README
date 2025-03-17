@@ -31,10 +31,12 @@ wholly new classes using existing examples as a template.
 Requirements
 ============
 
-Python 2. Sorry, I know Python 2 is ancient. It probably wouldn't be too hard to upgrade Demakein to Python 3, I just haven't gotten around to it.
+Python 2. Sorry, I know Python 2 is ancient. It probably wouldn't be too 
+hard to upgrade Demakein to Python 3, I just haven't gotten around to it.
 
 - Linux:
-    Use your package manager to install Python 2 and pip, or install from source.
+    Use your package manager to install Python 2 and pip, 
+    or install from source.
 
 - OS X
     Reported to be possible, however I can't give exact instructions.
@@ -50,7 +52,9 @@ Python 2 runs on.
 
   sudo pip install --upgrade nesoni
 
-The "make" tools in Demakein additionally require CGAL and associated paraphenalia. I have only tested this on Linux, but I'm told it's possible on OS X as well.
+The "make" tools in Demakein additionally require CGAL and associated 
+paraphenalia. I have only tested this on Linux, but I'm told it's 
+possible on OS X as well.
 
 - g++
 - cmake
@@ -67,9 +71,11 @@ The "make" tools in Demakein additionally require CGAL and associated paraphenal
 Installing Python 2 on a modern Linux
 =====================================
 
-Python 2 is no longer necessarily provided by your Linux distribution, but it should be fairly easy to compile from source.
+Python 2 is no longer necessarily provided by your Linux distribution, 
+but it should be fairly easy to compile from source.
 
-Download the Python 2 source code from https://www.python.org/downloads/release/python-2718/ then
+Download the Python 2 source code from 
+https://www.python.org/downloads/release/python-2718/ then
 
   tar xvf Python-2.7.18.tgz
   cd Python-2.7.18
@@ -77,7 +83,9 @@ Download the Python 2 source code from https://www.python.org/downloads/release/
   make
   sudo make install
 
-This installs python2 system-wide. I'm not sure if there's an alternative. You might want to subsequently delete /usr/local/bin/python so python3 remains default.
+This installs python2 system-wide. I'm not sure if there's an alternative. 
+You might want to subsequently delete /usr/local/bin/python so python3 
+remains default.
 
 You'll also need pip. Download https://bootstrap.pypa.io/pip/2.7/get-pip.py and run
 
@@ -110,7 +118,8 @@ or:
 Using PyPy
 ==========
 
-Using PyPy will let Demakein run considerably faster, if you are able to install a Python 2 version of PyPy.
+Using PyPy will let Demakein run considerably faster, if you are able to 
+install a Python 2 version of PyPy.
 
 
 Installation from source
