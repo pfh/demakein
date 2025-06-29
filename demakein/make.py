@@ -1,9 +1,8 @@
 
 import math
 
-from . import design, shape, profile, pack
+from . import config, legion, design, shape, profile, pack
 
-from nesoni import config, legion
 
 def decorate(prof, pos, align, amount=0.2):
     amount = prof(pos)*amount

@@ -1,7 +1,7 @@
 
 import sys, math, random, bisect, multiprocessing, signal, time
 
-from nesoni import legion, grace
+from . import legion, grace
 
 #def status(*items):
 #    """ Display a status string. """

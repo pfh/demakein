@@ -18,7 +18,7 @@ import math, os, pickle, sys, random, collections
 
 import profile, svg
 
-from nesoni import config
+from . import config
 
 # ===== Utility constants and functions =====
 

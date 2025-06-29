@@ -24,8 +24,8 @@ from .all import All
 
 def main():
     """ Command line interface. """
-    import nesoni    
-    nesoni.run_toolbox([
+    from . import legion    
+    legion.run_toolbox([
             'Demakein '+VERSION,
             'Flutes',
             Design_pflute, 

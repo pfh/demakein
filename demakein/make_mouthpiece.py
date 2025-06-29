@@ -1,9 +1,8 @@
 
 import math
 
-from nesoni import config
+from . import config, shape, profile, make
 
-from . import shape, profile, make
 
 """
 

@@ -31,11 +31,9 @@ average: 15.5 wavelength = 3.87 lengths = 0.645 diameters
 
 
 import sys, os, math
-sys.path.insert(0, os.path.split(__file__)[0])
 
-import design, make, shape, profile
+from . import config, design, make, shape, profile
 
-from nesoni import config
 
 RES = 20
 

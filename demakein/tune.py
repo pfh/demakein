@@ -1,9 +1,8 @@
 
 import math
 
-from nesoni import config
+from . import config, design, optimize
 
-from . import design, optimize
 
 class Working(object): pass
 

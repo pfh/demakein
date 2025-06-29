@@ -1,9 +1,8 @@
 
 import math
 
-from nesoni import config
+from . import config, make, shape, profile
 
-from . import make, shape, profile
 
 def wobble(diameter=1.0, wobble=0.5, spin=0.0, period=16, n=256):
     radius = diameter * 0.5

@@ -57,11 +57,10 @@ setup(name='demakein',
       ],
       
       install_requires = [ 
-          'nesoni', 
           'cffi' ,
       ],
       
-      url = 'http://www.logarithmic.net/pfh/design',
+      url = 'https://www.logarithmic.net/pfh/design',
       author = 'Paul Harrison',
-      author_email = 'pfh@logarithmic.net',
+      author_email = 'paul.francis.harrison@gmail.com',
 )

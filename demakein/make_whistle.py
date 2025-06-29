@@ -3,13 +3,8 @@
 
 import sys, os, math
 
-sys.path.insert(0, os.path.normpath(os.path.join(__file__,'..','..')))
+from . import config, shape, geom, make, profile, pack
 
-import demakein
-from demakein import shape, geom, make, profile, pack
-
-import nesoni
-from nesoni import config
 
 @config.help("""\
 Make the head of a whistle instrument.

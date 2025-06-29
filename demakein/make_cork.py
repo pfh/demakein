@@ -1,8 +1,6 @@
 
 
-from nesoni import config
-
-from . import shape, profile, make
+from . import config, shape, profile, make
 
 @config.help(
 'Make a cork.',

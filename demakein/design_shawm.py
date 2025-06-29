@@ -1,9 +1,8 @@
 
 import copy
 
-from . import design, profile
+from . import config, design, profile
 
-from nesoni import config
 
 def inrange(low,high,n):
     return [ (i+1)*(high-low)/(n+2)+low for i in range(1,n+1) ]

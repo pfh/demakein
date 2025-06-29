@@ -1,8 +1,7 @@
 
 
-from nesoni import config
+from . import config, make, shape, profile
 
-from . import make, shape, profile
 
 @config.help('Make a windcap for a reed instrument.')
 @config.Float_flag('dock_diameter',

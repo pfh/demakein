@@ -4,7 +4,7 @@ import copy, math
 
 import profile, design
 
-from nesoni import config
+from . import config
 
 pflute_fingerings = [
         ('D4',   [1,1,1,1,1,1]),

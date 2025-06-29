@@ -1,10 +1,8 @@
 
 import sys, os, math
-sys.path.insert(0, os.path.split(__file__)[0])
 
-import design, make, design_flute, profile, shape, pack
+from . import config, design, make, design_flute, profile, shape, pack
 
-from nesoni import config
 
 @config.help("""\
 Produce 3D models using the output of "demakein design-*-flute:"

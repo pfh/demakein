@@ -1,9 +1,7 @@
 
 import math, copy
 
-from nesoni import config
-
-from . import design, profile
+from . import config, design, profile
 
 @config.Float_flag('tweak_gapextra')
 #@config.Float_flag('tweak_bulgediameter')

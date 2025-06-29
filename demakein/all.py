@@ -1,8 +1,6 @@
 
 import demakein
-
-import nesoni
-from nesoni import config
+from . import config
 
 @config.help("""\
 Design and make all instruments, in a variety of sizes.

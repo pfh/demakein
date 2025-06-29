@@ -1,9 +1,7 @@
 
 import math, traceback, os, random, sys, io, collections
 
-from . import profile, design, pack, geom
-
-from nesoni import config
+from . import config, profile, design, pack, geom
 
 #=====================
 #from blender import *

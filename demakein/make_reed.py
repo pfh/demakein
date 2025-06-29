@@ -1,9 +1,8 @@
 
 import math
 
-from . import design, make, shape, profile
+from . import config, design, make, shape, profile
 
-from nesoni import config
 
 def grow(loop,thickness):
     extent = loop.extent()

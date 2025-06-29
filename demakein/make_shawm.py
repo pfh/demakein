@@ -11,11 +11,9 @@ ratio
 
 
 import sys, os, math
-sys.path.insert(0, os.path.split(__file__)[0])
 
-from . import design, make, profile, shape, pack, make_bauble
+from . import config, design, make, profile, shape, pack, make_bauble
 
-from nesoni import config
 
 @config.help("""\
 Produce 3D models using the output of "demakein make-shawm:".
