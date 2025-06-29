@@ -78,7 +78,7 @@ class Make_base(config.Action):
         
         shape.save(prefix + '.stl')
         
-        import sketch
+        from . import sketch
         sketch.sketch(shape, prefix + '-sketch.svg')
 
     def _before_run(self):
@@ -435,7 +435,7 @@ class Make_instrument(config.Action_with_working_dir, Make_base):
         triangle_lower  = triangle.scale(d0*0.5-self.gap)
         d1_3 = d0*0.6666+d1*0.3334
         d2_3 = d0*0.3334+d1*0.6666
-        for i in xrange(1,5):
+        for i in range(1,5):
             bump = shape.extrusion(
                 [ d1_3*0.5-self.gap*0.5, d2_3*0.5-self.gap*0.5, dmax*0.5 ],
                 [ triangle_upper.scale(0.0), triangle_upper, triangle_upper ]

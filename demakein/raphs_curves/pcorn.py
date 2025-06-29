@@ -2,8 +2,8 @@
 
 from math import *
 
-import clothoid
-import cornu
+from . import clothoid
+from . import cornu
 
 class Segment:
     def __init__(self, z0, z1, th0, th1):
@@ -13,7 +13,7 @@ class Segment:
         self.th1 = th1
         self.compute()
     def __repr__(self):
-        return '[' + `self.z0` + `self.z1` + ' ' + `self.th0` + ' ' + `self.th1` + ']'
+        return '[' + repr(self.z0) + repr(self.z1) + ' ' + repr(self.th0) + ' ' + repr(self.th1) + ']'
     def compute(self):
         dx = self.z1[0] - self.z0[0]
         dy = self.z1[1] - self.z0[1]
@@ -152,7 +152,7 @@ class Curve:
             pseg = self.segs[(i + len(self.segs) - 1) % len(self.segs)]
             seg = self.segs[i]
             th = clothoid.mod_2pi(pseg.chth + pseg.th1 - (seg.chth - seg.th0))
-            print '% pseg', pseg.chth + pseg.th1, 'seg', seg.chth - seg.th0
+            print('% pseg', pseg.chth + pseg.th1, 'seg', seg.chth - seg.th0)
             pisline = pseg.k0 == 0 and pseg.k1 == 0
             sisline = seg.k0 == 0 and seg.k1 == 0
             if fabs(th) > 1e-3 or (pisline and not sisline) or (sisline and not pisline):

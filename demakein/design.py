@@ -16,7 +16,7 @@ Fingerholes are enumerated from bottom (end-most) to top.
 
 import math, os, pickle, sys, random, collections
 
-import profile, svg
+from . import profile, svg
 
 from . import config
 
@@ -234,7 +234,7 @@ class Instrument:
                 def func(reply, wavelength, fingers, emission, area=area, area1=area1):
                     new_reply, mag1 = junction2_reply(area, area1, reply)
                     if emission is not None:
-                        for i in xrange(len(emission)):
+                        for i in range(len(emission)):
                             emission[i] *= mag1
                     return new_reply
                 self.actions.append(func)
@@ -263,7 +263,7 @@ class Instrument:
                     new_reply, mag1, mag2 = junction3_reply(area, area, hole_area, reply, hole_reply)
                 
                     if emission is not None:
-                        for i in xrange(len(emission)):
+                        for i in range(len(emission)):
                             emission[i] *= mag1
                         if not fingers[index]:
                             emission.append(hole_area*mag2)
@@ -288,7 +288,7 @@ class Instrument:
                 reply = action(reply, w, fingers, emission)
         
             # Scale by top area
-            for i in xrange(len(emission)):
+            for i in range(len(emission)):
                 emission[i] /= self.emission_divide
         
         if not self.closed_top: reply *= -1.0
@@ -614,7 +614,7 @@ class Instrument_designer(config.Action_with_output_dir):
     #n-2 initial positions of bore kinks, as fraction of initial length
     @property
     def initial_inner_fractions(self):
-        return [ (i+1.0)/(len(self.inner_diameters)-1) for i in xrange(len(self.inner_diameters)-2) ]
+        return [ (i+1.0)/(len(self.inner_diameters)-1) for i in range(len(self.inner_diameters)-2) ]
 
     @property
     def min_inner_fraction_sep(self):
@@ -636,7 +636,7 @@ class Instrument_designer(config.Action_with_output_dir):
 
     @property
     def initial_outer_fractions(self):
-        return [ (i+1.0)/(len(self.outer_diameters)-1) for i in xrange(len(self.outer_diameters)-2) ]
+        return [ (i+1.0)/(len(self.outer_diameters)-1) for i in range(len(self.outer_diameters)-2) ]
 
     @property
     def min_outer_fraction_sep(self):
@@ -648,7 +648,7 @@ class Instrument_designer(config.Action_with_output_dir):
 
     @property
     def initial_hole_fractions(self):
-        return [ (i+3.0)/(self.n_holes+2) * 0.5 for i in xrange(self.n_holes) ]
+        return [ (i+3.0)/(self.n_holes+2) * 0.5 for i in range(self.n_holes) ]
 
     @property
     def initial_hole_diameter_fractions(self):
@@ -1099,7 +1099,7 @@ class Instrument_designer(config.Action_with_output_dir):
         del self.instrument
 
     def run(self):
-        import optimize
+        from . import optimize
 
         assert self.initial_length is not None, 'Initial length required'
         assert len(self.min_hole_diameters) == self.n_holes

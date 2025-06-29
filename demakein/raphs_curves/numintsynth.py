@@ -37,15 +37,15 @@ def add(poly0, poly1, nmax):
 
 def pr(str):
     if tex:
-        print str, '\\\\'
+        print(str, '\\\\')
     else:
-        print '\t' + str + ';'
+        print('\t' + str + ';')
 
 def prd(str):
     if tex:
-        print str, '\\\\'
+        print(str, '\\\\')
     else:
-        print '\tdouble ' + str + ';'
+        print('\tdouble ' + str + ';')
 
 def polymul(p0, p1, degree, basename, suppress_odd = False):
     result = []

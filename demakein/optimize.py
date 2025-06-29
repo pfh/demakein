@@ -41,7 +41,7 @@ def make_update(vecs, initial_accuracy, do_noise):
     #weight_weight = (1.0) / (n**0.5)
     weights = [ 
         random.normalvariate(0.0, weight_weight) 
-        for i in xrange(n) 
+        for i in range(n) 
         ]
     
     offset = (0.0-sum(weights)) / n
@@ -49,8 +49,8 @@ def make_update(vecs, initial_accuracy, do_noise):
     weights[ random.randrange(n) ] += 1.0
     
     update = [ 
-        sum( vecs[j][i]*weights[j] for j in xrange(n) )
-        for i in xrange(m) 
+        sum( vecs[j][i]*weights[j] for j in range(n) )
+        for i in range(m) 
         ]
     
     #update = [ 
@@ -74,7 +74,7 @@ def make_update(vecs, initial_accuracy, do_noise):
 def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial_accuracy=0.001, monitor = lambda x,y: None):
     pool_size = legion.coordinator().get_cores()
     
-    worker_futs = [ legion.coordinator().new_future() for i in xrange(pool_size) ]
+    worker_futs = [ legion.coordinator().new_future() for i in range(pool_size) ]
     reply_futs = [ ]
     
     workers = [
@@ -97,7 +97,7 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
         jobs = [ ]
         
         pool_size = int(len(best)*5) #5
-        print len(best),'parameters, pool size', pool_size
+        print(len(best),'parameters, pool size', pool_size)
 
         currents = [ (best, best_score) ]
         
@@ -158,7 +158,7 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
             
             if len(currents) >= pool_size and best_score[0] == 0.0:
                 xspan = 0.0
-                for i in xrange(len(start_x)):
+                for i in range(len(start_x)):
                     xspan = max(xspan,
                         max(item[0][i] for item in currents) -
                           min(item[0][i] for item in currents)
@@ -171,7 +171,7 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
             i += 1
         
         grace.status('')
-        print '%s %.5f\n' % (comment, best_score[1])
+        print('%s %.5f\n' % (comment, best_score[1]))
         
     finally:
         #pool.terminate()

@@ -82,7 +82,7 @@ class S_basis(tuple):
         s = t*(1-t)
         result = self[0](t)
         p = s
-        for i in xrange(1,len(self)):
+        for i in range(1,len(self)):
             result += self[i](t) * p
             p *= s
         return result
@@ -109,18 +109,18 @@ class S_basis(tuple):
     
     def __add__(self, other):
         size, self, other = self._compat(other)
-        return type(self)( self[i]+other[i] for i in xrange(size) )
+        return type(self)( self[i]+other[i] for i in range(size) )
 
     def __sub__(self, other):
         size, self, other = self._compat(other)
-        return type(self)( self[i]-other[i] for i in xrange(size) )
+        return type(self)( self[i]-other[i] for i in range(size) )
 
     def multiplied(self, other, operator):
         zero = operator(self[0].a0*0,other[0].a0*0)
         
         c = [Linear(zero,zero)]*(len(self)+len(other))
-        for j in xrange(len(other)):
-            for i in xrange(j,j+len(self)):
+        for j in range(len(other)):
+            for i in range(j,j+len(self)):
                 tri = operator(other[j].tri(),self[i-j].tri())
                 c[i+1] = c[i+1] + Linear(-tri,-tri)
                 c[i] = c[i] + Linear(operator(other[j].a0,self[i-j].a0), operator(other[j].a1,self[i-j].a1))
@@ -160,7 +160,7 @@ class S_basis(tuple):
     
     def derivative(self):
         c = [ ]
-        for k in xrange(len(self)-1):
+        for k in range(len(self)-1):
              d = (2*k+1)*(self[k].a1 - self[k].a0)
              c.append(Linear(
                  d + (k+1)*self[k+1].a0,
@@ -173,11 +173,11 @@ class S_basis(tuple):
 
     def integral(self):
         a = [ self[0]*0 ]
-        for k in xrange(1,len(self)+1):
+        for k in range(1,len(self)+1):
             ahat = self[k-1].tri()*(-1.0/(2*k))
             a.append(Linear(ahat,ahat))
         aTri = self[0].a0*0
-        for k in xrange(len(self)-1,-1,-1):
+        for k in range(len(self)-1,-1,-1):
             aTri = (self[k].hat() + (k+1)*0.5*aTri)*(1.0/(2*k+1))
             a[k] = a[k] + Linear(-0.5*aTri,0.5*aTri)
         return S_basis(a)
@@ -195,7 +195,7 @@ class S_basis(tuple):
         """ Calculate f(t)=self(other(t)) """
         s = (ONE-other)*other
         result = S_basis([self[0]*0])
-        for i in xrange(len(self)-1,-1,-1):
+        for i in range(len(self)-1,-1,-1):
             result = result*s + (ONE-other).scaled(self[i].a0) + other.scaled(self[i].a1)
             #S_basis([Linear(self[i].a0,self[i].a0)]) + other.scaled(self[i].a1-self[i].a0)
         return result
@@ -205,7 +205,7 @@ class S_basis(tuple):
         """
         result = target
         deriv = self.derivative()
-        for i in xrange(iters):
+        for i in range(iters):
             result = result - (self.compose(result) - target).divided(deriv.compose(result), k)
             result = result.truncated(k)
         return result.truncated(k)
@@ -304,7 +304,7 @@ def newtonoid(initial, fp,fpp, k):
     #foo
     
     step = 1.0
-    for i in xrange(k*8):
+    for i in range(k*8):
         for item in basis:
             #c = score(result)
             #b = scorep(result)
@@ -360,7 +360,7 @@ class Path(collections.namedtuple('Path','path velocity normal position')):
     def find(self, position):
         low = 0.0
         high = 1.0
-        for i in xrange(32):
+        for i in range(32):
             mid = (low+high)*0.5
             value = self.position(mid)
             if position < value:
@@ -403,10 +403,10 @@ def path(point0,vec0,norm0,point1,vec1,norm1):
     tri = point1-point0
     
     length = tri.mag()
-    print '.', length
+    print('.', length)
     vec0 = vec0.unit()
     vec1 = vec1.unit()
-    for i in xrange(4):
+    for i in range(4):
         s = length
         path = S_basis([Linear(point0,point1),Linear(vec0*s-tri,vec1*-s+tri)])    
         velocity = path.derivative()
@@ -414,7 +414,7 @@ def path(point0,vec0,norm0,point1,vec1,norm1):
         position = speed.integral()
         position = position - ONE.scaled(position[0].a0)
         length = position[0].a1
-        print '-', length
+        print('-', length)
     
     normal = S_basis([Linear(norm0,norm1)])
     
@@ -424,7 +424,7 @@ def path(point0,vec0,norm0,point1,vec1,norm1):
 def plot(*items):
     import pylab
 
-    ts = [ i/100.0 for i in xrange(101) ]
+    ts = [ i/100.0 for i in range(101) ]
     for item in items:
         pylab.plot(ts, [ item(t) for t in ts ])
     pylab.show()
@@ -474,7 +474,7 @@ if __name__ == '__main__':
     
     #print arc.derivative()(0), arc.derivative()(1)
     
-    ts = [ i/100.0 for i in xrange(101) ]
+    ts = [ i/100.0 for i in range(101) ]
     #pylab.plot([ arc(t).x for t in ts ],[ arc(t).y for t in ts ],'.')
     pylab.plot([ dent(t) for t in ts ])
     pylab.plot([ x(t)**0.5 for t in ts ], 'o')

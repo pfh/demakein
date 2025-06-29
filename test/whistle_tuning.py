@@ -45,14 +45,14 @@ for note, obtained in zip(notes, obtained):
         if abs(design.wavelength(note2,designer.transpose) - design.wavelength(note)) < 1e-3: break
     else:
         assert False, note2
-    print fingers,
+    print(fingers, end=' ')
     w = design.wavelength(note)
     w_real = design.SPEED_OF_SOUND / obtained
     w_base = base.true_wavelength_near(w, fingers, designer.max_grad)[0]
     w_mod = mod.true_wavelength_near(w, fingers, designer.max_grad)[0]
     #print w, w_real, unmod, mod
-    print w_real, w_mod, w_mod/w_real #w, w_base, w_mod, w_real/w_base, w_base/w_mod, (w_real/w_base) / (w_mod/w_base)
+    print(w_real, w_mod, w_mod/w_real) #w, w_base, w_mod, w_real/w_base, w_base/w_mod, (w_real/w_base) / (w_mod/w_base)
     e += abs(1.0-w_mod/w_real)
-print e
+print(e)
     
     

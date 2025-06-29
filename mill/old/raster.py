@@ -65,7 +65,7 @@ def line_points2(x1,y1,x2,y2):
     
     result = [ ]
     rounder = steps//2
-    for i in xrange(steps+1):
+    for i in range(steps+1):
         result.append((
            x1+((x2-x1)*i+rounder)//steps,
            y1+((y2-y1)*i+rounder)//steps,
@@ -79,7 +79,7 @@ def line_points3(x1,y1,z1,x2,y2,z2):
     
     result = [ ]
     rounder = steps//2
-    for i in xrange(steps+1):
+    for i in range(steps+1):
         result.append((
            x1+((x2-x1)*i+rounder)//steps,
            y1+((y2-y1)*i+rounder)//steps,
@@ -129,7 +129,7 @@ def draw_triangle(tri, rast):
     ceil = numpy.ceil
         
     if x1 != x2:
-        for x in xrange(int(numpy.ceil(x1)),int(x2)+1):
+        for x in range(int(numpy.ceil(x1)),int(x2)+1):
             y1 = m1*x+c1
             y2 = m3*x+c3
             z1 = mz1*x+cz1
@@ -145,7 +145,7 @@ def draw_triangle(tri, rast):
             sl[:] = maximum(sl,zs)
     
     if x2 != x3:
-        for x in xrange(int(numpy.ceil(x2)),int(x3)+1):
+        for x in range(int(numpy.ceil(x2)),int(x3)+1):
             y1 = m2*x+c2
             y2 = m3*x+c3
             z1 = mz2*x+cz2
@@ -176,15 +176,15 @@ def raster(filename, res):
     rast = numpy.empty((int(size[1])+1,int(size[0])+1), 'float64')
     rast[:,:] = -size[2]
     
-    print rast.shape
+    print(rast.shape)
     
     for tri in tris:
         draw_triangle(tri, rast)
     
     #return (rast+0.5).astype('int16')
     result = numpy.empty(rast.shape, 'int16')
-    for y in xrange(rast.shape[0]):
-        for x in xrange(rast.shape[1]):
+    for y in range(rast.shape[0]):
+        for x in range(rast.shape[1]):
             result[y,x] = int(rast[y,x]+0.5)
     return result
 
@@ -235,7 +235,7 @@ def dilate(mask, radius):
     dilation_amount = 0
     
     result = numpy.zeros(mask.shape,bool)  
-    for y in xrange(int(radius),-1,-1):
+    for y in range(int(radius),-1,-1):
         x = int(math.sqrt(radius*radius-y*y))
         while dilation_amount < x:
             dilation_amount += 1
@@ -278,8 +278,8 @@ def contours(mask):
 def circle_points(radius):
     iradius = int(radius)
     points = [ ]
-    for y in xrange(-iradius,iradius+1):
-        for x in xrange(-iradius,iradius+1):
+    for y in range(-iradius,iradius+1):
+        for x in range(-iradius,iradius+1):
             if y*y+x*x <= radius*radius:
                 points.append((x,y))
     return points
@@ -304,7 +304,7 @@ def unmill(rast, mill_points):
     
     mill_points = sorted(mill_points, key=lambda item:-item[2])
     
-    for y in xrange(sy):
+    for y in range(sy):
         row = result[y]
         sys.stdout.write('\r%d ' % (sy-y))
         sys.stdout.flush()
@@ -388,7 +388,7 @@ class Miller(config.Configurable):
         best = 0
         best_point = points[0]
         best_score = 1e30
-        for i in xrange(len(points)):
+        for i in range(len(points)):
             j = (i+1)%len(points)
             for x1,y1 in line_points2(points[i][0],points[i][1],points[j][0],points[j][1]):
                 score = sum( ((x1-x2)**2+(y1-y2)**2+1)**-1.0 for j,(x2,y2) in enumerate(self.drill_points) )
@@ -455,11 +455,11 @@ class Miller(config.Configurable):
             bit = ball_mill(self.res_bit_radius)
         else:
             bit = end_mill(self.res_bit_radius)
-        print 'Unmilling'
+        print('Unmilling')
         inraster = unmill(raster, bit)
-        print 'Again'
+        print('Again')
         inagain = unmill(inraster, ball_mill(self.res_bit_radius))
-        print 'Done'
+        print('Done')
         
         def point_score(x,y,z):
             return 1.0 / ((inagain[y,x]-inraster[y,x])+self.res_bit_radius)
@@ -507,7 +507,7 @@ class Miller(config.Configurable):
                 break
             
             spin = (spin-GOLDEN)%1.0
-        print
+        print()
     
     def get_commands(self):
         speed_ratio_z = self.x_speed / self.z_speed
@@ -548,7 +548,7 @@ class Miller(config.Configurable):
     def save_commands(self, filename):
         with open(filename,'wb') as f:
             for item in self.get_commands():
-                print >> f, item+';'
+                print(item+';', file=f)
 
 class Wood(Miller):
     pass
@@ -644,7 +644,7 @@ if __name__ == '__main__':
         for filename in filenames:
             assert filename.endswith('.stl')
         for filename in filenames:
-            print filename
+            print(filename)
             do_raster(filename[:-4], 20, filename)
             do_cut(filename[:-4],miller,filename[:-4]+'.raster')
     
@@ -656,7 +656,7 @@ if __name__ == '__main__':
         
         im = data['raster'].astype('float')
         
-        print float(im.shape[1])/data['res'],'x',float(im.shape[0])/data['res'],'x',-numpy.minimum.reduce(im.flat) / data['res'], 'mm'
+        print(float(im.shape[1])/data['res'],'x',float(im.shape[0])/data['res'],'x',-numpy.minimum.reduce(im.flat) / data['res'], 'mm')
         
         im -= numpy.minimum.reduce(im.flat)
         im /= numpy.maximum.reduce(im.flat)
@@ -664,7 +664,7 @@ if __name__ == '__main__':
         import cv
         cim = cv.fromarray( numpy.tile(im[::-1,:,None].copy(),(1,1,3)) )
         mat = cv.CreateMat(im.shape[0]//4, im.shape[1]//4, cv.CV_64FC3)
-        print cim.type, mat.type
+        print(cim.type, mat.type)
         cv.Resize(cim, mat)
         cv.ShowImage('thing', mat)
         cv.WaitKey()

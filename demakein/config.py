@@ -11,7 +11,7 @@ Metainformation about tools allows
 """
 
 
-import sys, os, pickle, traceback, textwrap, re, copy, functools, types, datetime, pipes, platform
+import sys, os, pickle, traceback, textwrap, re, copy, functools, types, datetime, platform, shlex
 
 from . import workspace
 
@@ -136,7 +136,7 @@ class Parameter(object):
         return str(value)
     
     def describe_quoted(self, value):
-        return pipes.quote(self.describe(value))
+        return shlex.quote(self.describe(value))
 
     def __call__(self, item):
         # Put the parameter after any parameters from base classes
@@ -681,15 +681,13 @@ class Configurable_metaclass(type):
     def __dir__(self):
         result = [ ]
         for item in self.mro():
-            for key, value in item.__dict__.items():
+            for key, value in list(item.__dict__.items()):
                 if key not in result and isinstance(value, types.FunctionType) and not key.startswith('_'):
                     result.append(key)
         return result 
 
 
-class Configurable(object):
-    __metaclass__ = Configurable_metaclass
-    
+class Configurable(object, metaclass=Configurable_metaclass):
     parameters = ()
         
     help = ''
@@ -826,7 +824,7 @@ class Configurable(object):
             suffix = ''
         
         order = sorted(
-            range(len(self.parameters)),
+            list(range(len(self.parameters))),
             key=lambda i: (self.parameters[i].sort_order, i)
         )
         
@@ -918,7 +916,7 @@ class Action_with_log(Action):
 
             filename = self.log_filename()
             if filename is not None and os.path.exists(os.path.split(filename)[0] or '.'):
-                self.log.attach(open(filename,'ab'))
+                self.log.attach(open(filename,'a'))
             self.log.close()
             del self.log
             del self._log_start

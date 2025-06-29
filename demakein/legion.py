@@ -3,7 +3,7 @@
 
 if __name__ == '__main__':
     def run_job():
-        import sys, os, imp, base64
+        import sys, os, base64
     
         # Connect to coordinator
         current_dir, python_path, main_file, address, authkey, mail_number = eval(base64.b64decode(sys.argv[1]))
@@ -21,7 +21,7 @@ if __name__ == '__main__':
             module.__file__ = main_file
             sys.modules['__job__'] = module
             sys.modules['__main__'] = module
-            execfile(main_file, module.__dict__)
+            exec(compile(open(main_file, "rb").read(), main_file, 'exec'), module.__dict__)
         
         # Retrieve function and execute
         func, args, kwargs = legion.coordinator().get_mail(mail_number)
@@ -45,17 +45,17 @@ else:
 
 # Based on an idea by Steven Bethard, http://bytes.com/topic/python/answers/552476-why-cant-you-pickle-instancemethods
 
-import copy_reg
+import copyreg
 import types
 
 def _pickle_method(method):
-    assert type(method.im_class) != types.ClassType, "Can't pickle instance methods of old-style classes. Use new-style classes!"
+    assert type(method.__self__.__class__) != type, "Can't pickle instance methods of old-style classes. Use new-style classes!"
 
-    obj = method.im_self
-    func = method.im_func
-    func_name = method.im_func.__name__
+    obj = method.__self__
+    func = method.__func__
+    func_name = method.__func__.__name__
 
-    cls = method.im_class
+    cls = method.__self__.__class__
     for func_class in cls.mro():
         if func_name in func_class.__dict__ and func_class.__dict__[func_name] is func:
             break
@@ -67,7 +67,7 @@ def _pickle_method(method):
 def _unpickle_method(func_class, func_name, obj, cls):
     return func_class.__dict__[func_name].__get__(obj, cls)
 
-copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)
+copyreg.pickle(types.MethodType, _pickle_method, _unpickle_method)
 
 
 
@@ -89,7 +89,7 @@ __all__ = """
 import multiprocessing 
 from multiprocessing import managers
 import threading, sys, os, signal, atexit, time, base64, socket, warnings, re, marshal, gc
-import cPickle as pickle
+import pickle as pickle
 
 from . import grace, config, selection
 
@@ -112,7 +112,7 @@ def interleave(iterators):
     while iterators:
         i = i%len(iterators)
         try:
-            yield iterators[i].next()
+            yield next(iterators[i])
             i = i+1
         except StopIteration:
             del iterators[i]
@@ -334,7 +334,7 @@ class My_coordinator:
 
     def job(self, func, *args, **kwargs):
         number = self.set_mail((func,args,kwargs))
-        
+
         if not self.job_command:
             multiprocessing.Process(target=_run_job, args=(_SERVER.address, _SERVER.authkey, number,)).start()
         
@@ -344,9 +344,9 @@ class My_coordinator:
                 main_file = main.__file__
             else:
                 main_file = None
-            
+                        
             address = _SERVER.address
-            authkey = _SERVER.authkey        
+            authkey = _SERVER.authkey
             token = base64.b64encode(repr((
                 os.getcwd(),
                 sys.path,
@@ -354,7 +354,7 @@ class My_coordinator:
                 address,
                 authkey,
                 number
-            )))
+            )).encode()).decode()
             
             command = substitute(self.job_command,
                 __command__ = '%s %s %s %s' % (sys.executable, __file__, token, self.job_name),
@@ -842,10 +842,10 @@ def _get_timestamp(action):
                 #for parameter in self.parameters:
                 #    if parameter.get(self) != parameter.get(old):
                 #        print >> sys.stderr, parameter.name, parameter.get(old), '->', parameter.get(self)            
-    except Exception, error:
+    except Exception as error:
         import traceback
         traceback.print_exc()
-        print >> sys.stderr, 'Error making %s, re-running: %s' % (action.ident(), error)
+        print('Error making %s, re-running: %s' % (action.ident(), error), file=sys.stderr)
 
     return None
     

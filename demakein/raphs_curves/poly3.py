@@ -82,14 +82,14 @@ def plot(ks):
     cmd = "moveto"
     for j in range(len(pts)):
         x, y = pts[j]
-        print 306 + 300 * x, 400 + 300 * y, cmd
+        print(306 + 300 * x, 400 + 300 * y, cmd)
         cmd = "lineto"
-    print "stroke"
+    print("stroke")
     x, y = pts[0]
-    print 306 + 300 * x, 400 + 300 * y, "moveto"
+    print(306 + 300 * x, 400 + 300 * y, "moveto")
     x, y = pts[-1]
-    print 306 + 300 * x, 400 + 300 * y, "lineto .5 setlinewidth stroke"
-    print "showpage"
+    print(306 + 300 * x, 400 + 300 * y, "lineto .5 setlinewidth stroke")
+    print("showpage")
 
 def solve_3spiro(th0, th1, k0, k1):
     ks = [0, 0, 0, 0]
@@ -139,10 +139,10 @@ if __name__ == '__main__':
     ks = [0, 0, 0, 0.01]
     #plot(ks)
     thk = calc_thk(ks)
-    print '%', thk
+    print('%', thk)
     
     ks = solve_3spiro(0, 0, 0, 0.001)
-    print '% thk =', calc_thk(ks)
+    print('% thk =', calc_thk(ks))
     #plot(ks)
-    print '%', ks
-    print calc_k1k2(ks)
+    print('%', ks)
+    print(calc_k1k2(ks))

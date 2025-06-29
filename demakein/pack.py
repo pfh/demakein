@@ -1,16 +1,16 @@
 
 import os
 
-import profile, shape
+from . import profile, shape
 
 def plan_segments(cuts, length_ratio):
     plans = [ ]
-    for i in xrange(1<<len(cuts)):
-        values = [ (i>>j)&1 for j in xrange(len(cuts)) ]
+    for i in range(1<<len(cuts)):
+        values = [ (i>>j)&1 for j in range(len(cuts)) ]
         upper = [0.0] + [ cuts[j] for j,k in enumerate(values) if k == 1] + [ 1.0 ]
         #lower = [0.0] + [ cuts[j] for j,k in enumerate(values) if k == 2] + [ 1.0 ]
         
-        lower = [0.0] + [ (upper[j]+upper[j+1])*0.5 for j in xrange(len(upper)-1) ] + [1.0]
+        lower = [0.0] + [ (upper[j]+upper[j+1])*0.5 for j in range(len(upper)-1) ] + [1.0]
         j = 0
         while j < len(lower)-2:
             if lower[j+2]-lower[j] <= length_ratio:
@@ -20,7 +20,7 @@ def plan_segments(cuts, length_ratio):
         
         good = True
         for seg in (upper,lower):
-            for j in xrange(len(seg)-1):
+            for j in range(len(seg)-1):
                 if seg[j+1]-seg[j] > length_ratio:
                     good = False
                     break
@@ -30,7 +30,8 @@ def plan_segments(cuts, length_ratio):
     
     assert plans, 'Couldn\'t find a way to segment for milling.'    
     
-    def scorer((upper,lower)):
+    def scorer(xxx_todo_changeme):
+        (upper,lower) = xxx_todo_changeme
         worst = 1e30
         for a in upper[1:-1]:
             for b in lower[1:-1]:
@@ -38,10 +39,10 @@ def plan_segments(cuts, length_ratio):
         return len(upper)+len(lower),len(upper),-worst
     
     best = min(plans, key=scorer)
-    print 'Segmentation:'
-    print ' '.join('%3.2f' % i for i in best[0])
-    print ' '.join('%3.2f' % i for i in best[1])
-    print
+    print('Segmentation:')
+    print(' '.join('%3.2f' % i for i in best[0]))
+    print(' '.join('%3.2f' % i for i in best[1]))
+    print()
     
     return best
                 
@@ -117,7 +118,7 @@ class Pack(object):
         
         upper = shape.block(-pad,xsize+pad,-pad,ysize+pad,0,self.zsize)
         
-        print 'Cut holes'
+        print('Cut holes')
 
         for i,(x,y,packable) in enumerate(self.items):
             if packable.use_upper:
@@ -126,7 +127,7 @@ class Pack(object):
                 minsum = flat.minkowski_sum(pad_cone)
                 upper.remove( minsum )
 
-        print 'Put things in them'
+        print('Put things in them')
 
         for x,y,packable in self.items:
             if packable.use_upper:
@@ -144,7 +145,7 @@ class Pack(object):
         xmaxs = [ x+packable.extent.xmax for x,y,packable in self.items ]
         margin = bol_width+bit_diameter+0.25
         
-        potential_bols = [ ((i+0.5)*xsize/bol, 0,ysize) for i in xrange(bol) ]
+        potential_bols = [ ((i+0.5)*xsize/bol, 0,ysize) for i in range(bol) ]
         bols = [ ]
         while potential_bols:
             pos, y_low, y_high = potential_bols.pop()
@@ -178,13 +179,13 @@ class Pack(object):
             ))     
         
         
-        print 'Underside'
+        print('Underside')
         
         # Cut the bottom of upper with lower, to depth    bit_diameter
         lower = shape.block(-pad,xsize+pad,-pad,ysize+pad,bit_diameter,self.zsize)
         lower.add(upper)
         
-        print 'Remove bores'
+        print('Remove bores')
 
         for x,y,packable in self.items:
             temp = packable.shapes[1].copy()
@@ -282,7 +283,7 @@ def deconstruct(outer, bore, top_fractions, bottom_fractions,
         thickness = block_zsize
         
         block = shape.block(extent.xmin-1,extent.xmax+1,extent.ymin-1,extent.ymax+1,0,thickness)
-        for i in xrange(n):
+        for i in range(n):
             temp_outer = outer.copy()
             temp_bore = bore.copy()
             temp_outer.move(0,0,-i*thickness)
@@ -343,8 +344,8 @@ def pack(template, packables, aspect_goal=1.0):
     step_back = 0.1
 
     points = [ ]
-    for y in xrange(int(template.ysize/step)):
-        for x in xrange(int(template.xsize/step)):
+    for y in range(int(template.ysize/step)):
+        for x in range(int(template.xsize/step)):
             points.append((x*step,y*step))
     
     todo = list(packables)
@@ -353,8 +354,8 @@ def pack(template, packables, aspect_goal=1.0):
             queue = [
                 (i,j,x,y)
                 for x,y in points
-                for i in xrange(len(todo))
-                for j in xrange(len(todo[i]))
+                for i in range(len(todo))
+                for j in range(len(todo[i]))
             ]
         
             #for i in range(len(todo)):
@@ -392,7 +393,7 @@ def pack(template, packables, aspect_goal=1.0):
                 else:
                     break
             
-            print len(todo),'put',len(packs),x,y
+            print(len(todo),'put',len(packs),x,y)
             
             pack.put(x,y,todo[i][j])
             del todo[i]
@@ -419,16 +420,16 @@ def cut_and_pack(outer, bore, top_fractions, bottom_fractions, xsize, ysize, zsi
     packables.extend(extra_packables)
 
     for item in packables:
-        print '%.1fmm x %.1fmm x %.1fmm' % (item[0].extent.xmax,item[0].extent.ymax,item[0].extent.zmax)
+        print('%.1fmm x %.1fmm x %.1fmm' % (item[0].extent.xmax,item[0].extent.ymax,item[0].extent.zmax))
 
-    print 'Packing'
+    print('Packing')
 
     template = mill_template(xsize + pad*2, ysize + pad*2, zsize, dilation)
     packs = pack(template, packables, 0.5*float(ysize)/xsize)
     #for item in packs:
     #    mill_squish(item)
     
-    print 'Rendering'
+    print('Rendering')
     
     return save_packs(packs, save, bit_diameter, pad)
 

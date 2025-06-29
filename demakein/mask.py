@@ -162,7 +162,7 @@ def make_mask(lines):
     
     count = numpy.zeros((height,width), 'int32')
     
-    for (x1,y1,x2,y2), n in line_count.items():
+    for (x1,y1,x2,y2), n in list(line_count.items()):
         if n == 0: continue 
         ix1 = int_ceil(x1)
         ix2 = int_ceil(x2)
@@ -193,7 +193,7 @@ def save(prefix, mask):
 
 
 def trace(mask, res=1.0):
-    import shape
+    from . import shape
     
     process = subprocess.Popen([
         'potrace', '-a', '-1', '-t', '0', '-u', '100', '-b', 'svg'
@@ -242,16 +242,16 @@ def trace(mask, res=1.0):
 
 
 if __name__ == '__main__':
-    import shape
+    from . import shape
     loop = shape.Loop( shape.circle(50.0)[:50] )
     with open('/tmp/test.pbm','wt') as f: write_pbm(f,loop.mask(1.0).data)
-    print( max(x for x,y in loop) - min(x for x,y in loop) )
+    print(( max(x for x,y in loop) - min(x for x,y in loop) ))
     for i in range(10):
          mask = loop.mask(1.0)
          with open('/tmp/test2.pbm','wt') as f: write_pbm(f,mask.data)
          [ loop ] = trace(mask)
-         print( max(x for x,y in loop), min(x for x,y in loop) )
-         print( max(y for x,y in loop), min(y for x,y in loop) )
+         print(( max(x for x,y in loop), min(x for x,y in loop) ))
+         print(( max(y for x,y in loop), min(y for x,y in loop) ))
          print()
          #print( min(x for x,y in loop) )
     #mask[5,5] = 0

@@ -6,7 +6,7 @@ from . import config, profile, design, pack, geom
 #=====================
 #from blender import *
 #=====================
-from cgal import *
+from .cgal import *
 #=====================
 
 
@@ -119,7 +119,7 @@ class Loop(list):
         return Loop( (x,-y) for x,y in self[::-1] )
 
     def mask(self, res):
-        import mask
+        from . import mask
         lines = [ (self[i][0]*res,self[i][1]*res,
                    self[(i+1)%len(self)][0]*res,self[(i+1)%len(self)][1]*res)
                   for i in range(len(self)) ]
@@ -434,7 +434,7 @@ def make_formwork(outer, bore, length, top_fractions, bottom_fractions,
     bores, _ = make_segments(bore, length, radius, top_fractions, bottom_fractions, bit_diameter, False)
 
     n = len(outers)
-    order = sorted(range(n),key=lambda i: -lengths[i])
+    order = sorted(list(range(n)),key=lambda i: -lengths[i])
     lengths = [ lengths[i] for i in order ]
     outers = [ outers[i] for i in order ]
     bores = [ bores[i] for i in order ]
@@ -489,7 +489,7 @@ def make_formwork(outer, bore, length, top_fractions, bottom_fractions,
     lower = block(-ramp,xsize+ramp,0,ysize+ramp,0,depth+1)
     upper = block(-ramp,xsize+ramp,0,ysize+ramp,eps,depth)
     
-    print('Necessary origin: x +', ramp, ' y + ', peg_margin-peg_diameter)
+    print(('Necessary origin: x +', ramp, ' y + ', peg_margin-peg_diameter))
     
     for item in bores:
         lower.remove(item)
@@ -609,13 +609,13 @@ def path_extrusion(path, cross_section, *profiles):
         #print 'r',ratio
         #if abs(poses[i+1]-poses[i]) > 1.0 and ratio < 1.0:
         b = path.get_bentness(poses[i],poses[i+1])
-        print 'b', b
+        print('b', b)
         if b > 1.0/QUALITY:
             poses.insert(i+1, (poses[i]+poses[i+1])*0.5)
         else:
             i += 1
     
-    print poses
+    print(poses)
     
     frames = [ ]
     shapes = [ ]

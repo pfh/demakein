@@ -23,7 +23,7 @@ def shift(commands, x,y,v):
     #print '(height hack)'
     for item in commands:
         if item.startswith('Z'):           
-            pos = map(int,item[1:].split(','))
+            pos = list(map(int,item[1:].split(',')))
             #if pos[2] >= 40: pos[2] = 2420
             pos[0] += x
             pos[1] += y
@@ -51,13 +51,13 @@ def execute(commands, port_name,  start_command=0):
             try:
                 return port.getDSR()
             except IOError:
-                print ' IOError '
+                print(' IOError ')
                 time.sleep(t)
                 t *= 2
     
     start = time.time()
     #for i, command in enumerate(commands):
-    for i in xrange(start_command,len(commands)):
+    for i in range(start_command,len(commands)):
         command = commands[i]
     
         #char = port.read(1)
@@ -73,7 +73,7 @@ def execute(commands, port_name,  start_command=0):
         command = command.strip() + ';\n'
 
         #Paranoia
-        for j in xrange(3):
+        for j in range(3):
             while not check_dsr():
                 time.sleep(0.01)
             port.write(';\n')
@@ -91,7 +91,7 @@ def execute(commands, port_name,  start_command=0):
         sys.stdout.flush()
     
     port.close()
-    print
+    print()
 
 
 
@@ -113,7 +113,7 @@ class Send(config.Action):
         commands = open(self.filename,'rb').read().strip().rstrip(';').split(';')
         commands = [ item.strip() for item in commands ]
         
-        print len(commands), 'commands'
+        print(len(commands), 'commands')
     
         body_start = commands.index('!MC1') + 1
     
@@ -131,15 +131,15 @@ class Send(config.Action):
         while True:
             if start == body_start: break
             if commands[start].startswith('Z'):
-                pos = map(int,commands[start][1:].split(','))
+                pos = list(map(int,commands[start][1:].split(',')))
                 if pos[2] >= 2400:
                     break
             start -= 1
         
-        print 'commands  ', len(commands)
-        print 'body_start', body_start
-        print 'start     ', start
-        print 'body_end  ', body_end
+        print('commands  ', len(commands))
+        print('body_start', body_start)
+        print('start     ', start)
+        print('body_end  ', body_end)
         
         execute(commands[:body_start], self.port)
         

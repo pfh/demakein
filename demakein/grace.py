@@ -8,6 +8,7 @@ Succeed or fail with good grace and manners. Play well with others.
 import sys, os, subprocess
 
 from .config import Error, filesystem_friendly_name
+from functools import reduce
 
 # exec grace.DEBUG
 DEBUG = 'import code; code.interact(local=locals())'
@@ -74,7 +75,7 @@ class Multicontext(object):
                 exc = sys.get_exc()
         self.active = False
         if exc != (None,None,None):
-            raise exc[0],exc[1],exc[2]
+            raise exc[0](exc[1]).with_traceback(exc[2])
             
 
 
@@ -100,7 +101,7 @@ def pretty_number(number, width=0):
     else:
         assert isinstance(number,int)    
         s = str(abs(number))[::-1]
-        groups = [ s[i:i+3] for i in xrange(0,len(s),3) ]
+        groups = [ s[i:i+3] for i in range(0,len(s),3) ]
         result = ','.join(groups)
         if number < 0: 
             result += '-'
@@ -204,7 +205,7 @@ def execute(args, commands, default_command=default_command):
         commands = dict( (item.__name__.replace('_','-').strip('-'), item) for item in commands )
     
     if any( item.endswith(':') and item[:-1] in commands for item in args ):
-        commands = dict( (a+':',b) for a,b in commands.items() )
+        commands = dict( (a+':',b) for a,b in list(commands.items()) )
     
     command_locations = [ i for i,arg in enumerate(args) if arg in commands ]
     split_points = command_locations + [len(args)]    
@@ -223,7 +224,7 @@ def how_many_cpus():
     #for Linux, Unix and MacOS
     try:
         if hasattr(os, "sysconf"):
-            if os.sysconf_names.has_key("SC_NPROCESSORS_ONLN"): 
+            if "SC_NPROCESSORS_ONLN" in os.sysconf_names: 
                 #Linux and Unix
                 ncpus = os.sysconf("SC_NPROCESSORS_ONLN")
                 if isinstance(ncpus, int) and ncpus > 0:
@@ -232,12 +233,12 @@ def how_many_cpus():
                 #MacOS X
                 return int(os.popen2("sysctl -n hw.ncpu")[1].read())
         #for Windows
-        if os.environ.has_key("NUMBER_OF_PROCESSORS"):
+        if "NUMBER_OF_PROCESSORS" in os.environ:
             ncpus = int(os.environ["NUMBER_OF_PROCESSORS"]);
             if ncpus > 0:
                 return ncpus
     except:
-        print >> sys.stderr, 'Attempt to determine number of CPUs failed, defaulting to 1'
+        print('Attempt to determine number of CPUs failed, defaulting to 1', file=sys.stderr)
     #return the default value
     return 1
 

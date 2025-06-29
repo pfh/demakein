@@ -73,11 +73,11 @@ def make_widget(
 def make_horn(straight_length, length, d1, d2, power):
     k = (d1/d2)**(1.0/power)
     a = k*length/(1.0-k)
-    print a, k
+    print(a, k)
     b = d1/(abs(a)**power)
     f = lambda x: b*(abs(x+a)**power)
     
-    print f(0.0), f(length)
+    print(f(0.0), f(length))
     
     outer_profile = profile.make_profile([
          (0.0, d2+1.5),
@@ -89,7 +89,7 @@ def make_horn(straight_length, length, d1, d2, power):
     inner_profile = profile.make_profile(
          [ (0.0, d1) ] + [
          (straight_length+i*length/steps, f(i*length/steps))
-         for i in xrange(steps)
+         for i in range(steps)
          ] + [ (straight_length+length, d2) ])
     
     outer = shape.extrude_profile(outer_profile)

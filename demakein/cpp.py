@@ -236,7 +236,7 @@ class Module(Lazy_init):
         if signature not in self.functions:
             parameters = [ ]
             header = ''
-            for i in xrange(len(arg_names)):
+            for i in range(len(arg_names)):
                 param = arg_names[i]
                 c_type = arg_c_types[i]
                 cpp_type = arg_cpp_types[i]
@@ -356,8 +356,8 @@ class Module(Lazy_init):
         return self.as_reference('new '+initializer,**args)
     
     def call(self, func, *args):
-        names = [ '_arg%d' % i for i in xrange(len(args)) ]
-        param = dict(zip(names,args))
+        names = [ '_arg%d' % i for i in range(len(args)) ]
+        param = dict(list(zip(names,args)))
         expression = func + '('+','.join(names)+')'
         return self.eval(expression, **param)
     
@@ -392,7 +392,7 @@ if __name__ == '__main__':
     # Create a new object (will be deleted by garbage collector)
     vec = M.new('std::vector<int>')
     
-    for i in xrange(10):
+    for i in range(10):
         M.do('a.push_back(b)', a=vec, b=i)
     
     # for(i=<expr1>;i!=<expr2>;i++) yield *i

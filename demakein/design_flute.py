@@ -2,7 +2,7 @@
 
 import copy, math
 
-import profile, design
+from . import profile, design
 
 from . import config
 

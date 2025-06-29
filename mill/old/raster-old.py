@@ -65,7 +65,7 @@ def line_points2(x1,y1,x2,y2):
     
     result = [ ]
     rounder = steps//2
-    for i in xrange(steps+1):
+    for i in range(steps+1):
         result.append((
            x1+((x2-x1)*i+rounder)//steps,
            y1+((y2-y1)*i+rounder)//steps,
@@ -79,7 +79,7 @@ def line_points3(x1,y1,z1,x2,y2,z2):
     
     result = [ ]
     rounder = steps//2
-    for i in xrange(steps+1):
+    for i in range(steps+1):
         result.append((
            x1+((x2-x1)*i+rounder)//steps,
            y1+((y2-y1)*i+rounder)//steps,
@@ -129,7 +129,7 @@ def draw_triangle(tri, rast):
     ceil = numpy.ceil
         
     if x1 != x2:
-        for x in xrange(int(numpy.ceil(x1)),int(x2)+1):
+        for x in range(int(numpy.ceil(x1)),int(x2)+1):
             y1 = m1*x+c1
             y2 = m3*x+c3
             z1 = mz1*x+cz1
@@ -145,7 +145,7 @@ def draw_triangle(tri, rast):
             sl[:] = maximum(sl,zs)
     
     if x2 != x3:
-        for x in xrange(int(numpy.ceil(x2)),int(x3)+1):
+        for x in range(int(numpy.ceil(x2)),int(x3)+1):
             y1 = m2*x+c2
             y2 = m3*x+c3
             z1 = mz2*x+cz2
@@ -176,23 +176,23 @@ def raster(filename, res):
     rast = numpy.empty((int(size[1])+1,int(size[0])+1), 'float64')
     rast[:,:] = -size[2]
     
-    print rast.shape
+    print(rast.shape)
     
     for tri in tris:
         draw_triangle(tri, rast)
     
     #return (rast+0.5).astype('int16')
     result = numpy.empty(rast.shape, 'int16')
-    for y in xrange(rast.shape[0]):
-        for x in xrange(rast.shape[1]):
+    for y in range(rast.shape[0]):
+        for x in range(rast.shape[1]):
             result[y,x] = int(rast[y,x]+0.5)
     return result
 
 def circle_points(radius):
     iradius = int(radius)
     points = [ ]
-    for y in xrange(-iradius,iradius+1):
-        for x in xrange(-iradius,iradius+1):
+    for y in range(-iradius,iradius+1):
+        for x in range(-iradius,iradius+1):
             if y*y+x*x <= radius*radius:
                 points.append((x,y))
     return points
@@ -226,7 +226,7 @@ def unmill(rast, mill_points):
         if height != old_height:
             numpy.add(padded, height-old_height, padded)
             old_height = height
-            print height
+            print(height)
         #numpy.maximum(
         #    result,
         #    padded[pady+y:pady+sy+y,padx+x:padx+sx+x],
@@ -252,7 +252,7 @@ class Searcher:
     def __iter__(self): 
         return self
     
-    def next(self):
+    def __next__(self):
         if self.i == len(self.todo): raise StopIteration()
         item = self.todo[self.i]
         self.i += 1
@@ -297,17 +297,17 @@ class Raster(config.Configurable):
 
     def setup(self):
         self.rast = raster(self.filename, self.res)
-        print 'Loaded'
+        print('Loaded')
         self.ysize, self.xsize = self.rast.shape
         self.zmin = numpy.minimum.reduce(self.rast.flat)
 
-        print 'Distance offsets'
+        print('Distance offsets')
         self.increasing_distance_offsets = [ ]
-        for x in xrange(-self.xsize,self.xsize+1):
-            for y in xrange(-self.ysize,self.ysize+1):
+        for x in range(-self.xsize,self.xsize+1):
+            for y in range(-self.ysize,self.ysize+1):
                 self.increasing_distance_offsets.append((x,y))
         self.increasing_distance_offsets.sort(key=lambda i: i[0]*i[0]+i[1]*i[1])
-        print 'Ok'
+        print('Ok')
         
         self.speed_ratio = self.horizontal_speed / self.vertical_speed
         
@@ -324,22 +324,22 @@ class Raster(config.Configurable):
         
         assert self.res_cutting_depth >= 1
 
-        print 'Unmill'
+        print('Unmill')
         self.tool_rast = unmill(self.rast, self.res_bit_points)
-        print 'Ok'
+        print('Ok')
         
         self.cut_surface = numpy.zeros(self.rast.shape, self.rast.dtype)
         self.tool_safe = numpy.zeros(self.rast.shape, self.rast.dtype)
         self.tool_safe_depends = [
-            [ [(x,y)] for x in xrange(self.xsize) ]
-            for y in xrange(self.ysize)
+            [ [(x,y)] for x in range(self.xsize) ]
+            for y in range(self.ysize)
         ]
         self.tool_safe_updates = set()
         
         self.tool_can_cut_to = numpy.maximum(self.tool_rast, -self.res_cutting_depth)
         self.tool_can_cut_to_depends = [
-            [ [(x,y)] for x in xrange(self.xsize) ]
-            for y in xrange(self.ysize)
+            [ [(x,y)] for x in range(self.xsize) ]
+            for y in range(self.ysize)
         ]
         self.tool_can_cut_to_updates = set()
 
@@ -560,7 +560,7 @@ class Raster(config.Configurable):
             l1 = dx1*dx1+dy1*dy1+dz1*dz1
             l2 = dx2*dx2+dy2*dy2+dz2*dz2
             if dot >= 0 and dot*dot == l1*l2:
-                print 'omit', self.path[-2], self.path[-1], x,y,z,fast
+                print('omit', self.path[-2], self.path[-1], x,y,z,fast)
                 del self.path[-1]
             
         self.position = (x,y,z)
@@ -636,7 +636,7 @@ class Raster(config.Configurable):
                 zs[key] = min(zs.get(key, 0), z+dz)
         
         volume = 0
-        for (x,y),z in zs.items():
+        for (x,y),z in list(zs.items()):
             volume += max(0, self.cut_surface[y,x] - z)
         return volume
 
@@ -717,7 +717,7 @@ class Raster(config.Configurable):
             
             if not best: break
             
-            print best, best_points[0][2]-z, len(best_points)
+            print(best, best_points[0][2]-z, len(best_points))
             self.move_to(*best_points[0])
             self.cut_line_points(best_points)
             self.cut_to(best_points[-1][0],best_points[-1][1],self.tool_can_cut_to[best_points[-1][1],best_points[-1][0]])
@@ -944,14 +944,14 @@ r.go()
 
 import pickle
 f = open('r.dump','wb')
-print >> f, r.path
+print(r.path, file=f)
 f.close()
 
 f = open('commands.prn','wb')
 for command in r.get_commands():
-    print >> f, command + ';'
+    print(command + ';', file=f)
 f.close()
-print 'wrote commands.prn'
+print('wrote commands.prn')
 
 #r.x_scan(1.0*r.res)
 #

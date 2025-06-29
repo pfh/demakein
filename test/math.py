@@ -44,13 +44,13 @@ def new2(a0, a1, r1):
     pin1 = r1 * pout1
     pin0 = 1.0
     pout0 = pjunc - pin0
-    print
-    print pout1 + pin1    
-    print pjunc
-    print
-    print pin0-pout0+a1*(pin1-pout1)
-    print
-    print abs(pout1), abs(pout1/r1)
+    print()
+    print(pout1 + pin1)    
+    print(pjunc)
+    print()
+    print(pin0-pout0+a1*(pin1-pout1))
+    print()
+    print(abs(pout1), abs(pout1/r1))
     return pjunc - 1.0
 
 
@@ -59,9 +59,9 @@ def new3(a0, a1, a2, r1, r2):
     
     pout1 = pjunc / (r1+1.0)
     pout2 = pjunc / (r2+1.0)
-    print abs(pjunc)
-    print abs(pout1)
-    print abs(pout2)
+    print(abs(pjunc))
+    print(abs(pout1))
+    print(abs(pout2))
 
     return pjunc - 1.0
 
@@ -72,11 +72,11 @@ reply1 = -1j
 area2 = 7.0
 reply2 = 1j
 
-print junction2_reply(area, area1, reply1)
-print new2(area, area1, reply1)
-print '...'
+print(junction2_reply(area, area1, reply1))
+print(new2(area, area1, reply1))
+print('...')
 
-print junction3_reply(area,area1,area2, reply1,reply2)
-print new3(area, area1, area2, reply1, reply2)
+print(junction3_reply(area,area1,area2, reply1,reply2))
+print(new3(area, area1, area2, reply1, reply2))
 
 

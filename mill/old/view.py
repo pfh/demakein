@@ -41,7 +41,7 @@ else:
     #ax.plot(xs, ys, zs, ',')
     
     n = 20
-    for i in xrange(n-1,-1,-1):
+    for i in range(n-1,-1,-1):
         a = i*(len(xs)-1)//n
         b = (i+1)*(len(xs)-1)//n + 1
         c = 1.0*i/n

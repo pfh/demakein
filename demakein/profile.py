@@ -1,6 +1,6 @@
 
 import bisect, math
-from raphs_curves import cornu
+from .raphs_curves import cornu
 
 
 class Profile:
@@ -296,12 +296,12 @@ def make_profile(spec):
     return Profile(pos, low, high)
 
 if __name__ == '__main__':
-    from raphs_curves import cornu
+    from .raphs_curves import cornu
     
     for i in range(20+1):
         t = i / 10.0 - 0.5
         
         y1,x1 = cornu.eval_cornu(t)
         y2,x2 = cornu.eval_cornu(t+1e-3)
-        print( t, (math.atan2(y2-y1,x2-x1)+math.pi) % (2*math.pi) -math.pi )   #Angle is t^2
+        print(( t, (math.atan2(y2-y1,x2-x1)+math.pi) % (2*math.pi) -math.pi ))   #Angle is t^2
 

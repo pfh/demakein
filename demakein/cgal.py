@@ -1,9 +1,9 @@
 
 import sys, os, math
 
-import cpp
+from . import cpp
 
-import shape
+from . import shape
 
 CODE = r"""
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
@@ -192,21 +192,21 @@ class Shape(object):
         return list(self.iter_triangles())
 
     def save(self, filename):
-        print filename,
+        print(filename, end=' ')
         sys.stdout.flush()
         with open(filename,'wb') as f:
-            print >> f, 'solid'
+            print('solid', file=f)
             n = 0
             for tri in self.iter_triangles():
                 n += 1
-                print >> f, 'facet normal 0 0 0'
-                print >> f, 'outer loop'
+                print('facet normal 0 0 0', file=f)
+                print('outer loop', file=f)
                 for vert in tri:
-                    print >> f, 'vertex %f %f %f' % tuple(vert)
-                print >> f, 'endloop'
-                print >> f, 'endfacet'
-            print >> f, 'endsolid'
-        print n, 'triangles'
+                    print('vertex %f %f %f' % tuple(vert), file=f)
+                print('endloop', file=f)
+                print('endfacet', file=f)
+            print('endsolid', file=f)
+        print(n, 'triangles')
 
     def remove(self, other):
         M.do('a -= b',a=self.nef,b=other.nef)
@@ -260,7 +260,7 @@ class Shape(object):
         self.move(-0.5*(e.xmin+e.xmax),-0.5*(e.ymin+e.ymax),-e.zmin)
 
     def mask(self, res):
-        import mask
+        from . import mask
         
         lines = [ ]
         
@@ -350,7 +350,7 @@ def create(verts, tris, name=None, accuracy=1<<16):
         M.do('a.facets.push_back(b)',a=builder,b=vec)
     
     if n_vert_merges or n_tri_losses:
-        print 'Verts merged: %d of %d, triangles discarded: %d of %d' % (n_vert_merges, len(verts), n_tri_losses, len(tris))
+        print('Verts merged: %d of %d, triangles discarded: %d of %d' % (n_vert_merges, len(verts), n_tri_losses, len(tris)))
     
     M.do('a.delegate(b)',a=polyhedron,b=builder)
     
@@ -552,8 +552,8 @@ class Shape_2(object):
 
     def minkowski_sum(self, other):
         things = [ ]
-        my_polys = map(_connect_holes,self._iter_polygons_with_holes())
-        other_polys = map(_connect_holes,other._iter_polygons_with_holes())
+        my_polys = list(map(_connect_holes,self._iter_polygons_with_holes()))
+        other_polys = list(map(_connect_holes,other._iter_polygons_with_holes()))
         for a in my_polys:
             for b in other_polys:
                 things.append(Shape_2(
@@ -652,20 +652,20 @@ if __name__ == '__main__':
     
         M('a.make_tetrahedron(Point_3(0,0,0),Point_3(1,0,0),Point_3(0,1,0),Point_3(0,0,1))',a=polyhedron)
     
-        print M('a.size_of_vertices()',a=polyhedron)
-        print M('a.size_of_halfedges()',a=polyhedron)
-        print M('a.size_of_facets()',a=polyhedron)
+        print(M('a.size_of_vertices()',a=polyhedron))
+        print(M('a.size_of_halfedges()',a=polyhedron))
+        print(M('a.size_of_facets()',a=polyhedron))
         
-        print 'Closed:', M('(int)a.is_closed()',a=polyhedron)
+        print('Closed:', M('(int)a.is_closed()',a=polyhedron))
         
         nef = M.new('Nef_polyhedron(a)',a=polyhedron)
         
-        print 'Simple:', M('(int)a.is_simple()',a=nef)
+        print('Simple:', M('(int)a.is_simple()',a=nef))
         
         polyhedron2 = M.new('Polyhedron()')
         M('a.convert_to_polyhedron(b)',a=nef,b=polyhedron2)
     
-        print 'Closed:', M('(int)a.is_closed()',a=polyhedron2)
+        print('Closed:', M('(int)a.is_closed()',a=polyhedron2))
         
         #i = module('a.facets_begin()',a=polyhedron2)
         #end = module('a.facets_end()',a=polyhedron2)
@@ -675,11 +675,11 @@ if __name__ == '__main__':
         #    module('a++',a=i)
             
         for item in M.iterate('a.facets_begin()','a.facets_end()',a=polyhedron2):
-            print 'boop'
+            print('boop')
             for item2 in M.circulate('a.facet_begin()',a=item):
-                print M('a.vertex()->point()',a=item2)
+                print(M('a.vertex()->point()',a=item2))
     
-        print 'lovely'
+        print('lovely')
     
     #M.run(run)
     run()

@@ -2,8 +2,8 @@
 
 from math import *
 
-import pcorn
-from clothoid import mod_2pi
+from . import pcorn
+from .clothoid import mod_2pi
 
 def seg_offset(seg, d):
     th0 = seg.th(0)

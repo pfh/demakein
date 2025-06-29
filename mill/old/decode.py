@@ -63,7 +63,7 @@ class Action:
         self.motions = motions
         dims = [[],[],[]]
         for pos, v in motions:
-            for i in xrange(3):
+            for i in range(3):
                 dims[i].append(pos[i])
        
         self.bounds = [ (min(item),max(item)) for item in dims ]
@@ -151,7 +151,7 @@ def execute(commands, port='COM3'):
         command = command.strip() + ';\n'
 
         #Paranoia
-        for j in xrange(3):
+        for j in range(3):
             while not port.getDSR():
                 time.sleep(0.01)
             port.write(';\n')
@@ -172,7 +172,7 @@ def execute(commands, port='COM3'):
         sys.stdout.flush()
     
     port.close()
-    print
+    print()
 
 
 def shift(commands, x,y):
@@ -182,7 +182,7 @@ def shift(commands, x,y):
            result.append(item)
            continue
            
-        pos = map(int,item[1:].split(','))
+        pos = list(map(int,item[1:].split(',')))
         pos[0] += x
         pos[1] += y
         assert 0 <= pos[0] < MAX_X, 'outside work area on x axis'
@@ -197,7 +197,7 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
     commands = open(filename,'rb').read().strip().rstrip(';').split(';')
     commands = [ item.strip() for item in commands ]
     
-    print len(commands), 'commands'
+    print(len(commands), 'commands')
     
     body_start_1 = commands.index('!MC1')
     body_start = body_start_1+2
@@ -224,7 +224,7 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
         if command[:1] == 'V':
             v = float(command[1:])
         elif command[:1] == 'Z':
-            new_pos = map(int,command[1:].split(','))
+            new_pos = list(map(int,command[1:].split(',')))
             
             motions.append((new_pos, v))
             
@@ -244,9 +244,9 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
         else:
             assert False, command
     
-    print 'x', min(xs),max(xs)
-    print 'y', min(ys),max(ys)
-    print 'z', min(zs),max(zs)
+    print('x', min(xs),max(xs))
+    print('y', min(ys),max(ys))
+    print('z', min(zs),max(zs))
     #print set(horiz_vs)
     #print set(up_vs)
     #print set(down_vs)
@@ -255,9 +255,9 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
     vertical_v = min(down_vs)    if down_vs else 0.5
     tool_up_z = max(zs)          if zs else 40
     
-    print 'Horizontal v', horizontal_v
-    print '  Vertical v', vertical_v
-    print '     Tool up', tool_up_z
+    print('Horizontal v', horizontal_v)
+    print('  Vertical v', vertical_v)
+    print('     Tool up', tool_up_z)
     
     if smart:
         last_pos = motions[-1][0]
@@ -269,12 +269,12 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
         # Reorder actions ==================================================================
         
         bounds = [ 0 ]
-        for i in xrange(1, len(motions)):
+        for i in range(1, len(motions)):
             if motions[i-1][0][2] >= tool_up_z and motions[i][0][2] >= tool_up_z:
                 bounds.append(i)
         bounds.append(len(motions))
         
-        actions = [ Action(motions[bounds[i]:bounds[i+1]]) for i in xrange(len(bounds)-1) ]
+        actions = [ Action(motions[bounds[i]:bounds[i+1]]) for i in range(len(bounds)-1) ]
 
         # Remove surfacing        
         #i = 0
@@ -285,7 +285,7 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
         #        print 'Discard', i, len(actions[i].motions)
         #        del actions[i]
         
-        index = range(len(actions))
+        index = list(range(len(actions)))
         new_actions = [ actions.pop(0) ]
         del index[0]
         while actions:            
@@ -298,7 +298,7 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
             while i < len(actions) and i <= n:
                 score = new_actions[-1].cost_to_move_to(actions[i], tool_diam)
                 if score < best_score:
-                    for j in xrange(i-1,-1,-1):
+                    for j in range(i-1,-1,-1):
                         if actions[i].blocked_by(actions[j], tool_diam):
                             break
                     else:
@@ -306,11 +306,11 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
                         best = i
                 i += 1
             
-            print best,
+            print(best, end=' ')
             new_actions.append(actions.pop(best))
             del index[best]
         actions = new_actions
-        print
+        print()
 
         if twitch:
            for item in actions:
@@ -391,7 +391,7 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
             )
             t += d / 40.0 / v
             pos = new_pos
-        print 'Running time: %.1f units' % (t/60.0/60.0)
+        print('Running time: %.1f units' % (t/60.0/60.0))
         
         import pylab
         
@@ -436,7 +436,7 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
         return
     
     
-    print motions[0][0]
+    print(motions[0][0])
     mover = Mover(horizontal_v, vertical_v, commands[:body_start], 
                   commands[body_end:], motions[0][0], False) #smart)
     del motions[0]
@@ -444,7 +444,7 @@ def do_it(tool_diam, filename, x=0, y=0, percent=0, plot=False, port='COM3', sma
         mover.goto(pos,v)
     mover.close()
     
-    print len(mover.commands), 'commands'
+    print(len(mover.commands), 'commands')
     
     execute(mover.commands, port)
     

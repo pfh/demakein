@@ -75,7 +75,7 @@ class Make_reed_instrument(make.Make_millable_instrument):
         
         if self.bauble:
             end_dock_length = 5.0
-            print 'Bauble dock: %.1fmm diameter, %.1fmm length' % (m, end_dock_length)
+            print('Bauble dock: %.1fmm diameter, %.1fmm length' % (m, end_dock_length))
             bauble = make_bauble.Make_bauble(self.working_dir,dock_length=end_dock_length,dock_diameter=m).run()
             fixer = profile.make_profile([(0.0,m),(end_dock_length,m),(end_dock_length*2,0.0)])
             outer_profile = outer_profile.max_with(fixer)

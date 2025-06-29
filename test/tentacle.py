@@ -21,9 +21,9 @@ class Tentacle(make.Make):
         
         #geom.plot(path.position)
         
-        print path.get_length()
-        print path.find(90.0)
-        print path.get_point(90.0)
+        print(path.get_length())
+        print(path.find(90.0))
+        print(path.get_point(90.0))
         
         l = path.get_length()
         

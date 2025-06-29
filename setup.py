@@ -7,7 +7,7 @@ from setuptools import setup
 
 #Read version
 with open(os.path.normpath(os.path.join(__file__,'..','demakein','__init__.py')),'rU') as f:
-    exec f.readline()
+    exec(f.readline())
 
 long_description = """
 

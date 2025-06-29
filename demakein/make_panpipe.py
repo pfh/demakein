@@ -104,7 +104,7 @@ class Make_panpipe(make.Make):
         lengths = [ ]
         xs = [ ]
         for i, note in enumerate(SCALE):
-            print 'Make hole %d / %d' % (i+1,len(SCALE))
+            print('Make hole %d / %d' % (i+1,len(SCALE)))
             length = design.wavelength(note,self.transpose)*0.25 + LENGTH_CORRECTION*diameter
             x = i*(diameter+pad)
             lengths.append(length)
@@ -191,14 +191,14 @@ class Make_panpipe(make.Make):
         
         negative = string_hole.copy()
         for i, item in enumerate(negatives):
-            print 'Merge %d / %d' % (i+1,len(negatives))
+            print('Merge %d / %d' % (i+1,len(negatives)))
             negative.add(item)
         
         del negatives
         
         instrument = positive.copy()
         
-        print 'Remove holes from instrument'
+        print('Remove holes from instrument')
         instrument.remove(negative)
         
         del positive

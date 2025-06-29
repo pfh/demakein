@@ -18,17 +18,17 @@ def load_mask(filename):
 def _upscan(f):
     for i, fi in enumerate(f):
         if fi == numpy.inf: continue
-        for j in xrange(1,i+1):
+        for j in range(1,i+1):
             x = fi+j*j
             if f[i-j] < x: break
             f[i-j] = x
 
 def distance2_transform(bitmap):
     f = numpy.where(bitmap, 0, min(bitmap.shape[0],bitmap.shape[1])**2)
-    for i in xrange(f.shape[0]):
+    for i in range(f.shape[0]):
         _upscan(f[i,:])
         _upscan(f[i,::-1])
-    for i in xrange(f.shape[1]):
+    for i in range(f.shape[1]):
         _upscan(f[:,i])
         _upscan(f[::-1,i])
     return f
@@ -53,7 +53,7 @@ def bulge1(mask):
     def doline(x0,y0,x1,y1):
         points = raster.line_points2(x0,y0,x1,y1)
         begin = 0
-        for i in xrange(len(points)):
+        for i in range(len(points)):
             if ( points[i][0] < 0 or points[i][1] < 0 or
                  points[i][0] >= xsize or points[i][1] >= ysize or 
                  not mask[points[i][1],points[i][0]] ):
@@ -71,7 +71,7 @@ def bulge1(mask):
     #    doline(0,y,mask.shape[1]-1,y)
     
     n = 32
-    for i in xrange(n):
+    for i in range(n):
         a = i*math.pi/n
         dx = math.cos(a)
         dy = math.sin(a)
@@ -79,37 +79,37 @@ def bulge1(mask):
             scale = dx/xsize
             dx = xsize
             dy = dy/scale
-            for y in xrange(int(-abs(dy)),ysize+int(abs(dy))):
+            for y in range(int(-abs(dy)),ysize+int(abs(dy))):
                 doline(0,y,dx,y+dy)
         else:
             scale = dy/ysize
             dx = dx/scale
             dy = ysize
-            for x in xrange(int(-abs(dx)),xsize+int(abs(dx))):
+            for x in range(int(-abs(dx)),xsize+int(abs(dx))):
                 doline(x,0,x+dx,dy)
-        print dx, dy
+        print(dx, dy)
     
     return height
 
 def bulge(mask):
     ysize,xsize = mask.shape
     
-    print 'Distance2...'
+    print('Distance2...')
     dist2 = distance2_transform(numpy.logical_not(mask))
 
     points = [ ]
     radius = min(mask.shape[0],mask.shape[1])//2
-    for x in xrange(-radius,radius+1):
-        for y in xrange(-radius,radius+1):
+    for x in range(-radius,radius+1):
+        for y in range(-radius,radius+1):
             points.append((x*x+y*y,x,y))
     points.sort()
     points = numpy.array(points)
     
     height = numpy.zeros(mask.shape,'int16')
-    for y in xrange(mask.shape[0]):
+    for y in range(mask.shape[0]):
         sys.stdout.write('\r%d '%(mask.shape[0]-y))
         sys.stdout.flush()
-        for x in xrange(mask.shape[1]):
+        for x in range(mask.shape[1]):
             #max_d2 = 0
             #for d2,ox,oy in points:
             #    x2 = x+ox
@@ -144,8 +144,8 @@ def centroid(thing):
     tot = 0.0
     totx = 0.0
     toty = 0.0
-    for y in xrange(thing.shape[0]):
-        for x in xrange(thing.shape[1]):
+    for y in range(thing.shape[0]):
+        for x in range(thing.shape[1]):
             tot += thing[y,x]
             totx += x*thing[y,x]
             toty += y*thing[y,x]
@@ -157,26 +157,26 @@ def save_raster(filename, res, depth):
     
     with open(filename+'.stl','wb') as f:
         def vert(x,y):
-            print >> f, 'vertex %f %f %f' % (-float(x)/res,float(y)/res,-float(depth[y,x])/res)
-        print >> f, 'solid'
+            print('vertex %f %f %f' % (-float(x)/res,float(y)/res,-float(depth[y,x])/res), file=f)
+        print('solid', file=f)
         step = max(1,min(depth.shape[0],depth.shape[1])//200)
-        for x in xrange(0,depth.shape[1]-step*2+1,step):
-            for y in xrange(0,depth.shape[0]-step*2+1,step):
-                print >> f, 'facet normal 0 0 0'
-                print >> f, 'outer loop'
+        for x in range(0,depth.shape[1]-step*2+1,step):
+            for y in range(0,depth.shape[0]-step*2+1,step):
+                print('facet normal 0 0 0', file=f)
+                print('outer loop', file=f)
                 vert(x,y)
                 vert(x+step,y+step)
                 vert(x+step,y)
-                print >> f, 'endloop'
-                print >> f, 'endfacet'            
-                print >> f, 'facet normal 0 0 0'
-                print >> f, 'outer loop'
+                print('endloop', file=f)
+                print('endfacet', file=f)            
+                print('facet normal 0 0 0', file=f)
+                print('outer loop', file=f)
                 vert(x,y)
                 vert(x,y+step)
                 vert(x+step,y+step)
-                print >> f, 'endloop'
-                print >> f, 'endfacet'            
-        print >> f, 'endsolid'
+                print('endloop', file=f)
+                print('endfacet', file=f)            
+        print('endsolid', file=f)
     
 
 #depth = numpy.zeros(mask.shape,'int16')

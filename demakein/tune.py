@@ -34,7 +34,7 @@ class Tune(config.Action_with_working_dir):
     
     def _errors(self, state):
         mod = self.working.designer(
-            **dict(zip(self.working.parameters,state))
+            **dict(list(zip(self.working.parameters,state)))
             )
         
         instrument = mod.patch_instrument(
@@ -62,15 +62,15 @@ class Tune(config.Action_with_working_dir):
         return (sum( abs(item**p) for item in errors ) / max(1,len(errors)))**(1.0/p)
     
     def _report(self, state, etc=[]):        
-        print
+        print()
         for name, value in zip(self.working.parameters, state):
-            print '%s %.3f' % (name, value)
-        print
+            print('%s %.3f' % (name, value))
+        print()
         for error, observation in zip(self._errors(state),self.observations):
-            print '%6.1f cents  %s' % (error, observation)
-        print '--------------'        
-        print '%6.1f score' % self._score(state)
-        print
+            print('%6.1f cents  %s' % (error, observation))
+        print('--------------')        
+        print('%6.1f score' % self._score(state))
+        print()
     
     def run(self):
         self.working = Working()
@@ -98,7 +98,7 @@ class Tune(config.Action_with_working_dir):
             for item in self.working.parameters
             ]
 
-        print 'Current model and errors:'        
+        print('Current model and errors:')        
         self._report(initial)
         
         if self.parameters:
@@ -110,7 +110,7 @@ class Tune(config.Action_with_working_dir):
                 #monitor=self._report
                 )
             
-            print 'Optimized model and errors:'
+            print('Optimized model and errors:')
             self._report(state)
         
         

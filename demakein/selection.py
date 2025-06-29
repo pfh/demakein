@@ -55,7 +55,7 @@ def matches(expression, tags):
     try:
         value, expression = parse(expression)
         assert not expression, 'don\'t know what to do with: '+expression
-    except AssertionError, e:
+    except AssertionError as e:
         raise grace.Error('Could not parse: '+expression+', '+e.args[0])
     return value
 

@@ -1,5 +1,5 @@
 
-import os, cPickle, json, tempfile, contextlib, shutil
+import os, pickle, json, tempfile, contextlib, shutil
 
 class Workspace(object):
     """ Directory containing pickled objects, etc 
@@ -100,8 +100,8 @@ class Workspace(object):
     _object_filename = object_filename
     
     # A single step down the path of darkness, what's the worst that can happen?
-    def __div__(self, path):
-        if not isinstance(path, basestring):
+    def __truediv__(self, path):
+        if not isinstance(path, str):
             path = os.path.join(*path)
         return self.relative_path_as_path(path)
 

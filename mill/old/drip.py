@@ -2,7 +2,7 @@
 import sys, time, serial
 
 commands = open(sys.argv[1],'rb').read().rstrip(';').split(';')
-print len(commands), 'commands'
+print(len(commands), 'commands')
 
 port = serial.Serial(
     port = 'COM3',     #Change this to the appropriate port
@@ -25,4 +25,4 @@ for i, command in enumerate(commands):
     sys.stdout.flush()
 
 port.close()
-print
+print()
