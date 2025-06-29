@@ -85,10 +85,12 @@ Make a Viking-style panpipe.
 @config.Float_flag('thickness', 'Instrument thickness.\n(Wood thickness should be half this if milling.)')
 @config.Float_flag('wall', 'Minimum wall thickness')
 @config.Int_flag('transpose', 'Transpose (semitones)')
+@config.Bool_flag('mill', 'Create CNC-milling outputs (broken).')
 class Make_panpipe(make.Make):
     thickness = 8.0
     wall = 1.0
     transpose = 0
+    mill = False
     
     def run(self):
         zsize = self.thickness
@@ -215,6 +217,11 @@ class Make_panpipe(make.Make):
                   -cextent.zmin)
         self.save(copy,'instrument')
         del copy
+        
+        if not self.mill: 
+            return
+        
+        # Milling patterns
         
         top = shape.block(
             extent.xmin-1,extent.xmax+1,
