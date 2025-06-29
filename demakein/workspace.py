@@ -27,56 +27,56 @@ class Workspace(object):
             assert os.path.isdir(self.working_dir), self.working_dir + ' exists and is not a directory'
         
         self.name = os.path.split(os.path.abspath(working_dir))[1]
-
-    @property
-    def param(self):
-        if self.object_exists('parameters'):
-            return self.get_object('parameters', plain_text=True)
-        else:
-            return { }
-
-    def update_param(self, remove=[], **updates):
-        param = self.param
-        for item in remove:
-            if item in self.param:
-                del param[item]
-        param.update(updates)
-        self.set_object(param, 'parameters', plain_text=True)
-
-    def open(self, path, mode):
-        return open(self.object_filename(path), mode)
     
-    def object_exists(self, path):
-        return os.path.exists(self.object_filename(path))
-
-    def get_object(self, path, plain_text=False):
-        from nesoni import io
-        f = io.open_possibly_compressed_file(self._object_filename(path))
-        if plain_text:
-            data = f.read()
-            try:
-                result = json.loads(data)
-            except ValueError: #Older versions used repr instead of json.dump
-                result = eval(data)
-        else:
-            result = cPickle.load(f)
-        f.close()
-        return result
-
-    def set_object(self, obj, path, plain_text=False):
-        from nesoni import io
-        temp_filename = self._object_filename('tempfile')
-        if plain_text:
-            f = open(temp_filename, 'wb')
-            json.dump(obj, f)
-            f.close()
-        else:
-            f = io.Pipe_writer(temp_filename, ['gzip'])
-            cPickle.dump(obj, f, 2)
-            f.close()
-        
-        os.rename(temp_filename, self._object_filename(path))
-
+    # @property
+    # def param(self):
+    #     if self.object_exists('parameters'):
+    #         return self.get_object('parameters', plain_text=True)
+    #     else:
+    #         return { }
+    # 
+    # def update_param(self, remove=[], **updates):
+    #     param = self.param
+    #     for item in remove:
+    #         if item in self.param:
+    #             del param[item]
+    #     param.update(updates)
+    #     self.set_object(param, 'parameters', plain_text=True)
+    # 
+    # def open(self, path, mode):
+    #     return open(self.object_filename(path), mode)
+    # 
+    # def object_exists(self, path):
+    #     return os.path.exists(self.object_filename(path))
+    # 
+    # def get_object(self, path, plain_text=False):
+    #     from nesoni import io
+    #     f = io.open_possibly_compressed_file(self._object_filename(path))
+    #     if plain_text:
+    #         data = f.read()
+    #         try:
+    #             result = json.loads(data)
+    #         except ValueError: #Older versions used repr instead of json.dump
+    #             result = eval(data)
+    #     else:
+    #         result = cPickle.load(f)
+    #     f.close()
+    #     return result
+    # 
+    # def set_object(self, obj, path, plain_text=False):
+    #     from nesoni import io
+    #     temp_filename = self._object_filename('tempfile')
+    #     if plain_text:
+    #         f = open(temp_filename, 'wb')
+    #         json.dump(obj, f)
+    #         f.close()
+    #     else:
+    #         f = io.Pipe_writer(temp_filename, ['gzip'])
+    #         cPickle.dump(obj, f, 2)
+    #         f.close()
+    #     
+    #     os.rename(temp_filename, self._object_filename(path))
+    
     def path_as_relative_path(self, path):        
         #Breaks thumbnails if outputing to absolute output dir
         #if os.path.isabs(path):

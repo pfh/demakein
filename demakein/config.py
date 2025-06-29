@@ -853,11 +853,11 @@ class Action(Configurable):
         return os.path.join('.state', filesystem_friendly_name(self.ident()))
     
     def make(self):
-        from nesoni import legion
+        from . import legion
         legion.make(self)
 
     def process_make(self, stage=None):
-        from nesoni import legion
+        from . import legion
         legion.process_make(self, stage)
         
 
@@ -876,14 +876,14 @@ class Action_with_log(Action):
         
             self._log_start = datetime.datetime.now()
         
-            import nesoni
-            from nesoni import grace
+            import demakein
+            from . import grace
             self.log = grace.Log()
             self.log.quietly_log(
                '\n'+
                strip_color(self.describe())+'\n'+
                'from '+os.getcwd()+'\n\n'+    
-               'nesoni '+nesoni.VERSION+'\n\n'
+               'demakein '+demakein.VERSION+'\n\n'
             )
         self._log_level = self._log_level + 1
 
@@ -990,43 +990,43 @@ class Action_with_working_dir(Action_with_log):
 
 
 
-@String_flag('output', 'Output file (defaults to stdout). If filename ends with .gz or .bz2 it will be compressed appropriately.')
-class Action_with_optional_output(Action):
-    output = None
-    
-    def ident(self):
-        return super(Action_with_optional_output,self).ident() + '--' + (self.output or '') 
+#@String_flag('output', 'Output file (defaults to stdout). If filename ends with .gz or .bz2 it will be compressed appropriately.')
+#class Action_with_optional_output(Action):
+#    output = None
+#    
+#    def ident(self):
+#        return super(Action_with_optional_output,self).ident() + '--' + (self.output or '') 
+#
+#    def begin_output(self):
+#        from nesoni import io
+#    
+#        if self.output is not None:
+#           return io.open_possibly_compressed_writer(self.output)
+#        else:
+#           return sys.stdout
+#
+#    def end_output(self, f):
+#        if self.output is not None:
+#            f.close()
 
-    def begin_output(self):
-        from nesoni import io
-    
-        if self.output is not None:
-           return io.open_possibly_compressed_writer(self.output)
-        else:
-           return sys.stdout
+#@String_flag('input', 'Input file (defaults to stdin). The file may be compressed with gzip or bzip2 or be a BAM file.')
+#class Action_with_optional_input(Action):
+#    input = None
+#
+#    def begin_input(self):
+#        from nesoni import io    
+#        
+#        if self.input is not None:
+#           return io.open_possibly_compressed_file(self.input)
+#        else:
+#           return sys.stdin
+#
+#    def end_input(self, f):
+#        if self.input is not None:
+#            f.close()
 
-    def end_output(self, f):
-        if self.output is not None:
-            f.close()
-
-@String_flag('input', 'Input file (defaults to stdin). The file may be compressed with gzip or bzip2 or be a BAM file.')
-class Action_with_optional_input(Action):
-    input = None
-
-    def begin_input(self):
-        from nesoni import io    
-        
-        if self.input is not None:
-           return io.open_possibly_compressed_file(self.input)
-        else:
-           return sys.stdin
-
-    def end_input(self, f):
-        if self.input is not None:
-            f.close()
-
-class Action_filter(Action_with_optional_input, Action_with_optional_output):
-    pass
+#class Action_filter(Action_with_optional_input, Action_with_optional_output):
+#    pass
 
 
 

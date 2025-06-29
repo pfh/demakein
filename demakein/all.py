@@ -1,6 +1,6 @@
 
 import demakein
-from . import config
+from . import config, legion
 
 @config.help("""\
 Design and make all instruments, in a variety of sizes.
@@ -69,20 +69,23 @@ class All(config.Action_with_output_dir):
     def run(self):
         workspace = self.get_workspace()
         
-        stage = nesoni.Stage()
+        stage = legion.Stage()
         
         if self.panpipes:
             if self.make:
                 demakein.Make_panpipe(
                     workspace/'panpipe'
                     ).process_make(stage)
+                stage.barrier()
         
         if self.flutes:
             for model_name, model_code, designer in [
-                    ('folk-flute-straight', 'FFS', demakein.Design_straight_folk_flute),
-                    ('folk-flute-tapered',  'FFT', demakein.Design_tapered_folk_flute),
-                    ('pflute-straight',     'PFS', demakein.Design_straight_pflute),
-                    ('pflute-tapered',      'PFT', demakein.Design_tapered_pflute),
+                    ('folk-flute',  'FF', demakein.Design_folk_flute),
+                    ('pflute',      'PF', demakein.Design_pflute),
+                    #('folk-flute-straight', 'FFS', demakein.Design_straight_folk_flute),
+                    #('folk-flute-tapered',  'FFT', demakein.Design_tapered_folk_flute),
+                    #('pflute-straight',     'PFS', demakein.Design_straight_pflute),
+                    #('pflute-tapered',      'PFT', demakein.Design_tapered_pflute),
                     ]:
                 for size_name, size_code, transpose in [
                         ('tenor', 't', 0),
@@ -90,7 +93,8 @@ class All(config.Action_with_output_dir):
                         ('soprano', 's', 12),
                         ]:
                     stage.process(self._do_flute,model_name,model_code,size_name,size_code,designer,transpose)
-
+                    stage.barrier()
+        
         if self.whistles:
             for model_name, model_code in [
                     ('folk-whistle', 'FW'),
@@ -102,7 +106,8 @@ class All(config.Action_with_output_dir):
                         ('sopranino', 'ss', 17),
                         ]:
                     stage.process(self._do_folk_whistle,model_name,model_code,size_name,size_code,transpose)
-
+                    stage.barrier()
+        
         if self.shawms:
             for model_name, model_code, designer in [
                  ('shawm', 'SH', demakein.Design_shawm),
@@ -115,7 +120,8 @@ class All(config.Action_with_output_dir):
                          ('6mm-bass', '6b', -7, 6.0),
                          ]:
                      stage.process(self._do_shawm,model_name,model_code,size_name,size_code,designer,transpose,bore)
-
+                     stage.barrier()
+        
         stage.barrier()
 
 

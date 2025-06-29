@@ -59,8 +59,8 @@ def main():
             'Utilities',
             Tune,
             
-            #'Everything',        
-            #All,
+            'Everything',        
+            All,
             #'"demakein all:" uses the nesoni make system, see flags below.',
         ],
         show_make_flags=False,
