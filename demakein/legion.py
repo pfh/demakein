@@ -88,7 +88,7 @@ __all__ = """
 
 import multiprocessing 
 from multiprocessing import managers
-import threading, sys, os, signal, atexit, time, base64, socket, warnings, re, marshal, gc
+import threading, sys, os, signal, atexit, time, base64, socket, warnings, re, marshal, gc, shlex
 import pickle as pickle
 
 from . import grace, config, selection
@@ -179,7 +179,7 @@ class My_coordinator:
         self.futures = { }
         self.future_count = 0
         
-        self.job_name = 'nesoni_%d_' % os.getpid()
+        self.job_name = 'demakein_%d_' % os.getpid()
         
         self.job_command = DEFAULT_JOB_COMMAND
         self.kill_command = DEFAULT_KILL_COMMAND
@@ -316,7 +316,7 @@ class My_coordinator:
         elif identity in self.statuses:
             del self.statuses[identity]
         
-        if sys.stderr.isatty() and not os.environ.get('NESONI_NOTITLE'):
+        if sys.stderr.isatty() and not os.environ.get('DEMAKEIN_NOTITLE'):
             items = [ self.statuses[item] for item in sorted(self.statuses,reverse=True) ]
             alloc = 200 / max(1,len(items))
             status = ''
@@ -357,7 +357,7 @@ class My_coordinator:
             )).encode()).decode()
             
             command = substitute(self.job_command,
-                __command__ = '%s %s %s %s' % (sys.executable, __file__, token, self.job_name),
+                __command__ = '%s %s %s %s' % (shlex.quote(sys.executable), shlex.quote(__file__), token, self.job_name),
                 __token__ = token,
                 __jobname__ = self.job_name
             )
@@ -909,7 +909,7 @@ def _make_inner(action):
 
 
 def make(action):
-    """ Run a tool (an instance of a subclass of nesoni.config.Action) if necessary.
+    """ Run a tool (an instance of a subclass of config.Action) if necessary.
     """
     timestamp = _get_timestamp(action)    
     if timestamp is not None and timestamp >= LOCAL.time:
@@ -1054,20 +1054,20 @@ def process_make(action, stage=None):
 @config.String_flag('make_job', 
     'Command to launch a new python. Should either contain __command__, which will be subtituted '
     'with the full shell command, including the job name, or __token__ and __jobname__, '
-    'which should be used in something like "python -m nesoni.legion __token__ __jobname__".'
+    'which should be used in something like "python -m demakein.legion __token__ __jobname__".'
 )
 @config.String_flag('make_kill', 
     'Command to kill all processes identified by __jobname__.'
 )
 class Make(config.Action):
-    make_cores = int(os.environ.get('NESONI_CORES','0')) or multiprocessing.cpu_count()
+    make_cores = multiprocessing.cpu_count()
     make_show = False
     make_do = ''
     make_done = ''
     
-    make_address = os.environ.get('NESONI_ADDRESS') or socket.gethostbyname(socket.gethostname())
-    make_job = os.environ.get('NESONI_JOB') or DEFAULT_JOB_COMMAND
-    make_kill = os.environ.get('NESONI_KILL') or DEFAULT_KILL_COMMAND
+    make_address = '127.0.0.1'
+    make_job = DEFAULT_JOB_COMMAND
+    make_kill = DEFAULT_KILL_COMMAND
     
     def _before_run(self):
         manager((self.make_address, 0))
@@ -1123,7 +1123,7 @@ def run_script(function):
         Intended usage:
 
     
-        from nesoni import *
+        from demakein.legion import run_script
     
         def my_script():
             ...
