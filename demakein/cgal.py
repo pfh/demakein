@@ -194,7 +194,7 @@ class Shape(object):
     def save(self, filename):
         print(filename, end=' ')
         sys.stdout.flush()
-        with open(filename,'wb') as f:
+        with open(filename,'w') as f:
             print('solid', file=f)
             n = 0
             for tri in self.iter_triangles():

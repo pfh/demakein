@@ -11,11 +11,11 @@ import os, subprocess, hashlib, gc, time, platform
 def update_file(filename, content):
     good = os.path.exists(filename)
     if good:
-        with open(filename,'rb') as f:
+        with open(filename,'r') as f:
             current = f.read()
         good = (current == content)
     if not good:
-        with open(filename,'wb') as f:
+        with open(filename,'w') as f:
             f.write(content)
     return not good
 
@@ -146,7 +146,7 @@ class Module(Lazy_init):
                 else:
                     code.append(line+'\n')            
             code = ''.join(code)
-            filename = 'chunk_' + hashlib.sha1(code).hexdigest() + '.cpp'
+            filename = 'chunk_' + hashlib.sha1(code.encode()).hexdigest() + '.cpp'
             filenames.append(filename)
             update_file(self.build_dir+'/'+filename, code)
         
@@ -169,7 +169,7 @@ class Module(Lazy_init):
         
         self.code.extend(chunks)
 
-        with open(self.build_dir + '/hint','wb') as f:
+        with open(self.build_dir + '/hint','w') as f:
             f.write( repr({'preamble':self.preamble, 'hint':self.code}) )
 
     def cpp_type(self, item):
@@ -251,7 +251,7 @@ class Module(Lazy_init):
                     parameters.append( '%(c_type)s %(param)s' % locals() )
             all_parameters = ','.join(parameters)
             
-            name = 'lambda_'+hashlib.sha1(repr(signature)).hexdigest()
+            name = 'lambda_'+hashlib.sha1(repr(signature).encode()).hexdigest()
             
             if not _return_value:
                 as_reference = False
@@ -282,7 +282,7 @@ class Module(Lazy_init):
                 
                 mangle = self.ffi.string(self.get_symbol(typegetter_name)(*arg_c_values))
                 with subprocess.Popen(['c++filt','-t',mangle],stdout=subprocess.PIPE).stdout as f:
-                    return_cpp_type = f.read().strip()
+                    return_cpp_type = f.read().decode().strip()
                 
                 if _as_reference:
                     as_reference = True
@@ -311,7 +311,7 @@ class Module(Lazy_init):
                     self.require(code)
                     delete_name = None
                 else:
-                    delete_name = 'delete_' + hashlib.sha1(return_cpp_type).hexdigest()
+                    delete_name = 'delete_' + hashlib.sha1(return_cpp_type.encode()).hexdigest()
                     delete_code = (
                         'void %(delete_name)s(void *item) /*export*/\n'
                         '{\n'

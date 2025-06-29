@@ -3,7 +3,7 @@
 
 if __name__ == '__main__':
     def run_job():
-        import sys, os, base64
+        import sys, os, types, base64
     
         # Connect to coordinator
         current_dir, python_path, main_file, address, authkey, mail_number = eval(base64.b64decode(sys.argv[1]))
@@ -17,7 +17,7 @@ if __name__ == '__main__':
         legion.manager(address, authkey, connect=True)
         
         if main_file is not None: # so unpickling functions in __main__ works
-            module = imp.new_module('__job__')
+            module = types.ModuleType('__job__')
             module.__file__ = main_file
             sys.modules['__job__'] = module
             sys.modules['__main__'] = module
