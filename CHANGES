@@ -1,4 +1,8 @@
 
+0.19 - 2025-06-29
+       Update to require Python version 3.
+       Build system is now "hatch".
+
 0.18 - 2024-04-27
        Add long description.
 

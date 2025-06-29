@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[project]
+
+name = "demakein"
+
+authors = [
+    { name="Paul Harrison", email="paul.francis.harrison@gmail.com" }
+]
+
+description = "Design woodwind instruments and make them with a 3D printer or CNC mill."
+
+readme = "README.md"
+
+requires-python = ">=3"
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+license = "LGPL-2.1"
+license-files = ["LICENSE"]
+
+dependencies = [
+    "cffi"
+]
+
+dynamic = [ "version" ]
+
+[project.scripts]
+demakein = "demakein:main"
+
+[project.urls]
+Homepage = "https://logarithmic.net/pfh/design"
+Source = "https://github.com/pfh/demakein"
+
+
+[tool.hatch.build.targets.sdist]
+only-include = [ "demakein" ]
+
+[tool.hatch.version]
+path = "demakein/__init__.py"
+pattern = "VERSION = '(?P<version>[^']+)'"
