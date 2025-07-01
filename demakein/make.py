@@ -41,7 +41,8 @@ class Miller(config.Configurable):
             extent.zmin-extra_depth, extent.zmax,
         )
         
-        mill.remove( pattern.polygon_mask().to_3().minkowski_sum(pad_cone) )
+        #mill.remove( pattern.polygon_mask().to_3().minkowski_sum(pad_cone) )
+        mill.remove( pattern.mill_hole(pad_cone) )
         mill.add( pattern )
         
         rib_width = 1.0
@@ -61,7 +62,7 @@ class Miller(config.Configurable):
                 extent.zmin-extra_depth,extent.zmin+rib_height
                 )
             mill.add(block)
-
+        
         return mill
 
 

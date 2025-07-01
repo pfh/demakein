@@ -4,11 +4,10 @@ import math, traceback, os, random, sys, io, collections
 from . import config, profile, design, pack, geom
 
 #=====================
-#from blender import *
+#from .blender import *
+#from .engine_cgal import *
+from .engine_trimesh import *
 #=====================
-from .cgal import *
-#=====================
-
 
 # We use mm internally
 
@@ -40,6 +39,39 @@ Limits = collections.namedtuple('Limits',
 Limits_2 = collections.namedtuple('Limits_2',
    'xmin xmax ymin ymax'
 )
+
+
+def rotation_matrix(x,y,z,angle):
+    length = math.sqrt(x*x+y*y+z*z)
+    x = x/length
+    y = y/length
+    z = z/length
+    angle = angle * (math.pi/180.0)
+    c = math.cos(angle)
+    s = math.sin(angle)
+    return [
+        [ c+x*x*(1-c),   x*y*(1-c)-z*s, x*z*(1-c)+y*s ],
+        [ y*x*(1-c)+z*s, c+y*y*(1-c),   y*z*(1-c)-x*s ],
+        [ z*x*(1-c)-y*s, z*y*(1-c)+x*s, c+z*z*(1-c)   ],
+    ]
+
+def transform_point_3(matrix, point):
+    return tuple(
+        sum( matrix[i][j] * point[j] for j in (0,1,2) )
+        for i in (0,1,2)
+    )
+
+def extent_3(points):
+    xs = []
+    ys = []
+    zs = []
+    for point in points:
+        xs.append(point[0])
+        ys.append(point[1])
+        zs.append(point[2])
+    return shape.Limits(min(xs),max(xs),min(ys),max(ys),min(zs),max(zs))
+
+
 
 class Loop(list):
     @property

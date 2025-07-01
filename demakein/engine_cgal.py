@@ -101,6 +101,7 @@ M = cpp.Module(os.path.join(os.path.expanduser('~'),'.demakein'), CODE, CMAKE_CO
 def int_round(value):
     return int(math.floor(value+0.5))
 
+# Now duplicated in shape
 def rotation_matrix(x,y,z,angle):
     length = math.sqrt(x*x+y*y+z*z)
     x = x/length
@@ -115,12 +116,14 @@ def rotation_matrix(x,y,z,angle):
         [ z*x*(1-c)-y*s, z*y*(1-c)+x*s, c+z*z*(1-c)   ],
     ]
 
+# Now duplicated in shape
 def transform_point_3(matrix, point):
     return tuple(
         sum( matrix[i][j] * point[j] for j in (0,1,2) )
         for i in (0,1,2)
     )
 
+# Now duplicated in shape
 def extent_3(points):
     xs = []
     ys = []
@@ -301,6 +304,8 @@ class Shape(object):
         #    result.add( create_polygon_2([ (x,y) for x,y,z in triangle ]) )
         #return result
         
+    def mill_hole(self, pad_cone):
+        return self.polygon_mask().to_3().minkowski_sum(pad_cone)
     
     #def show(self):
     #    app = M.new('QApplication(argc, argv)',argc=0,argv=0)
@@ -549,7 +554,7 @@ class Shape_2(object):
         #        if M('CGAL::do_intersect(a,b)',a=ahole,b=bhole):
         #            return True
         #return False
-
+    
     def minkowski_sum(self, other):
         things = [ ]
         my_polys = list(map(_connect_holes,self._iter_polygons_with_holes()))
@@ -562,7 +567,7 @@ class Shape_2(object):
                         a=a,b=b)
                     ))
         return self._reduce_things(things)
-
+    
     def erosion(self, other):
         ext1 = self.extent()
         ext2 = other.extent()

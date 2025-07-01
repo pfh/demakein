@@ -26,7 +26,10 @@ license = "LGPL-2.1"
 license-files = ["LICENSE"]
 
 dependencies = [
-    "cffi"
+#    "cffi",
+    "trimesh",
+    "manifold3d",
+    "scipy",   # Needed for convex hull
 ]
 
 dynamic = [ "version" ]
