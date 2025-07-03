@@ -22,6 +22,8 @@ from .tune import Tune
 
 from .all import All
 
+from .legion import run_tool, run_toolbox
+
 def main():
     """ Command line interface. """
     from . import legion    

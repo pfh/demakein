@@ -3,18 +3,17 @@
 A basic flute or ney.
 
 The embouchure hole is not modelled.
+
 To use the design produced:
 - make a flute without finger holes, just embouchure hole and end stopper.
 - trim so that bottom note is in tune.
 - drill finger holes.
 
-The flute is a simple cylinder,
-so the tuning is not perfect over the two registers
-unless the finger holes are very large.
+The flute is a simple cylinder, so the tuning is not perfect over the two registers unless the finger holes are very large.
 
 """
 
-import demakein, nesoni
+import demakein
 
 class Flute(demakein.design.Instrument_designer):
     closed_top = False
@@ -50,5 +49,5 @@ class Flute(demakein.design.Instrument_designer):
         ]    
 
 if __name__ == '__main__': 
-    nesoni.run_tool(Flute)
+    demakein.run_tool(Flute)
 

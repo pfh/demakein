@@ -2,21 +2,17 @@
 
 A basic reedpipe.
 
-Note that the finger holes are underconstrained
-by the fingering system.
-Constraints such as balance and min_hole_spacing
-can be added to produce a comfortable instrument.
+Note that the finger holes are underconstrained by the fingering system. Constraints such as balance and min_hole_spacing can be added to produce a comfortable instrument.
 
-Note also the reed has some virtual length, 
-so the real instrument length will be shorter than designed.
+Note also the reed has some virtual length, so the real instrument length will be shorter than designed.
 
 """
 
-import demakein, nesoni
+import demakein
 
 class Reedpipe(demakein.design.Instrument_designer):
     closed_top = True
-
+    
     inner_diameters = [ 6.0, 6.0 ]
     outer_diameters = [ 10.0, 10.0 ]
     
@@ -38,8 +34,8 @@ class Reedpipe(demakein.design.Instrument_designer):
         ('A4',  [0,0,0,0,0,1,1]),
         ('B4',  [0,0,0,0,0,0,1]),
         ('C5',  [0,0,0,0,0,1,0]),
-        ]    
-    
+        ]
+
 if __name__ == '__main__': 
-    nesoni.run_tool(Reedpipe)
+    demakein.run_tool(Reedpipe)
 

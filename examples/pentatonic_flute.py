@@ -7,14 +7,10 @@ The resultant design can be used with Make_flute.
 Note that Make_flute must be executed using this script,
 so that it can unpickle the flute design.
 
-
-Small warning:
-The class hierarchy of instruments may change in future,
-meaning you might need to inherit from a class with a slightly different name.
-
 """
 
-import demakein, nesoni
+import demakein
+
 from demakein import design, design_flute
 
 class Design_pentatonic_flute(design_flute.Tapered_flute):
@@ -60,6 +56,6 @@ class Design_pentatonic_flute(design_flute.Tapered_flute):
 
 
 if __name__ == '__main__':
-    nesoni.run_toolbox(
+    demakein.run_toolbox(
         [ Design_pentatonic_flute, demakein.Make_flute ],
         show_make_flags=False)

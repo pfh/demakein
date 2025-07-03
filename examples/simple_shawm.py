@@ -1,5 +1,5 @@
 
-import demakein, nesoni
+import demakein
 
 class Design_simple_shawm(demakein.design.Instrument_designer):
     closed_top = True
@@ -41,7 +41,7 @@ class Design_simple_shawm(demakein.design.Instrument_designer):
     ]    
 
 if __name__ == '__main__':
-    nesoni.run_tool(Design_simple_shawm)
+    demakein.run_tool(Design_simple_shawm)
     
     # or
     #nesoni.run_toolbox([ 

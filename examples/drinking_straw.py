@@ -10,7 +10,7 @@ Drinking straw needs to be 0.85 of simulated length.
 
 import copy
 
-import demakein, nesoni
+import demakein
 
 class Reedpipe(demakein.design.Instrument_designer):
     def patch_instrument(self, inst):
@@ -62,5 +62,5 @@ class Pentatonic(Reedpipe):
     
 
 if __name__ == '__main__': 
-    nesoni.run_toolbox([ Diatonic, Pentatonic ])
+    demakein.run_toolbox([ Diatonic, Pentatonic ])
 
