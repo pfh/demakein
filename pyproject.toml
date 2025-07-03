@@ -28,8 +28,9 @@ license-files = ["LICENSE"]
 dependencies = [
 #    "cffi",
     "trimesh",
-    "manifold3d",
-    "scipy",   # Needed for convex hull
+    "manifold3d", # Needed by trimesh for correct boolean operations
+    "scipy",      # Needed by trimesh for convex hull, used in milling
+    "shapely",    # Needed for milling
 ]
 
 dynamic = [ "version" ]

@@ -1079,7 +1079,7 @@ class Make(config.Action):
         set_abort_make(self.make_show)
         set_do_selection(self.make_do)
         set_done_selection(self.make_done)
-
+    
     def run(self):
         pass
 

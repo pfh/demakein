@@ -85,7 +85,9 @@ class Make_base(config.Action):
     def _before_run(self):
         if self.draft:
             shape.draft_mode()
-        self.get_workspace()
+            
+        # 2025: Not sure why this was here. It messes up command line error handling if output dir not given.
+        #self.get_workspace()
 
 class Make(config.Action_with_output_dir, Make_base):
     pass

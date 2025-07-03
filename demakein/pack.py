@@ -49,6 +49,9 @@ def plan_segments(cuts, length_ratio):
 
 
 class Packable(object):
+    # shapes[0] is outside
+    # shapes[1] is bore
+    
     def __init__(self, shapes, rotation, dilation, use_upper=True):
         if not rotation:
             self.shapes = shapes
@@ -122,10 +125,14 @@ class Pack(object):
 
         for i,(x,y,packable) in enumerate(self.items):
             if packable.use_upper:
-                flat = packable.mask.to_3()
-                flat.move(x,y,0)
-                minsum = flat.minkowski_sum(pad_cone)
-                upper.remove( minsum )
+                #flat = packable.mask.to_3()
+                #flat.move(x,y,0)
+                #hole = flat.minkowski_sum(pad_cone)
+                temp = packable.shapes[0].copy()
+                temp.move(x,y,0)
+                hole = temp.mill_hole(pad_cone)
+                
+                upper.remove( hole )
 
         print('Put things in them')
 
@@ -190,12 +197,16 @@ class Pack(object):
         for x,y,packable in self.items:
             temp = packable.shapes[1].copy()
             temp.move(x,y,0)
-
-            flat = packable.mask.to_3()
-            flat.move(x,y,0)
-            minsum = flat.minkowski_sum(pad_cylinder)
-            temp.clip(minsum)
-
+            
+            #flat = packable.mask.to_3()
+            #flat.move(x,y,0)
+            #clipper = flat.minkowski_sum(pad_cylinder)
+            clipper = packable.shapes[0].copy()
+            clipper.move(x,y,0)
+            clipper = clipper.mill_hole(pad_cylinder)
+            
+            temp.clip(clipper)
+            
             lower.remove(temp)
         
         lower.rotate(0,1,0, 180)

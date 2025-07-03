@@ -652,22 +652,22 @@ class Configurable_metaclass(type):
         
         result = type.__new__(self, name, bases, dictionary)
         
-        for name in dictionary:
-            if not isinstance(dictionary[name], types.FunctionType): continue
+        for func_name in dictionary:
+            if not isinstance(dictionary[func_name], types.FunctionType): continue
             
-            func = dictionary[name]
+            func = dictionary[func_name]
             entries = [ ]
             exits = [ ]
-            before_name = '_before_'+name
-            after_name = '_after_'+name
+            before_name = '_before_'+func_name
+            after_name = '_after_'+func_name
             for item in result.mro():
                 if before_name in item.__dict__ or after_name in item.__dict__:
                     func = _wrap(func,item.__dict__.get(before_name,lambda self:None),
                                       item.__dict__.get(after_name,lambda self:None))
-            setattr(result, name, func) 
+            setattr(result, func_name, func)
         
         return result 
-
+    
     @property
     def __doc__(self):
         result = getattr(self,'__doc__original__','')
