@@ -4,10 +4,15 @@ import math, traceback, os, random, sys, io, collections
 from . import config, profile, design, pack, geom
 
 #=====================
-#from .blender import *
-#from .engine_cgal import *
-from .engine_trimesh import *
-#=====================
+
+engine = os.environ.get("DEMAKEIN_ENGINE", "trimesh")
+if engine == "trimesh":
+    from .engine_trimesh import *
+elif engine == "cgal":
+    from .engine_cgal import *
+else:
+    raise Exception("Unknown engine: " + engine)
+
 
 # We use mm internally
 
@@ -15,9 +20,11 @@ from .engine_trimesh import *
 #SCALE = 1.0   # mm -> mm
 
 QUALITY = 128
-def draft_mode():
-    global QUALITY
+
+# Use DEMAKEIN_DRAFT=1 to activate draft mode
+if int(os.environ.get("DEMAKEIN_DRAFT","0")):
     QUALITY = 16
+
 
 NAME_COUNT = 0
 def make_name(value=None):

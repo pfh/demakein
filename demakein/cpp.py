@@ -1,5 +1,9 @@
 """
 
+Used by engine_cgal, which is no longer used by default.
+
+This is my very strange dynamic way of interfacing with C++ code to use CGAL.
+
 Gwarggllykiiiiillllllmeeeeeeeeecougcougcough
 
 Note: pypy gc does not count c++ allocated memory, triggers major gc infrequently

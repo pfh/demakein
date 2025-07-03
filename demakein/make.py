@@ -66,14 +66,11 @@ class Miller(config.Configurable):
         return mill
 
 
-@config.Bool_flag('draft', 'Draft output')
 class Make_base(config.Action):
-    draft = False
-    
     # We'll need a lot of memory, so run exclusively
     def cores_required(self):
         return legion.coordinator().get_cores()
-
+    
     def save(self, shape, prefix):
         prefix = self.get_workspace()/prefix
         
@@ -81,12 +78,13 @@ class Make_base(config.Action):
         
         from . import sketch
         sketch.sketch(shape, prefix + '-sketch.svg')
-
-    def _before_run(self):
-        if self.draft:
-            shape.draft_mode()
+    
+    #def _before_run(self):
+        ## Draft mode can now be activated using envornment variable DEMAKEIN_DRAFT=1
+        #if self.draft:
+        #    shape.draft_mode()
             
-        # 2025: Not sure why this was here. It messes up command line error handling if output dir not given.
+        ## 2025: Not sure why this was here. It messes up command line error handling if output dir not given.
         #self.get_workspace()
 
 class Make(config.Action_with_output_dir, Make_base):

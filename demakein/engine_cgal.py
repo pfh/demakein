@@ -1,3 +1,11 @@
+"""
+
+CGAL based geometry engine.
+
+This is no longer used by default, but can be activated using envornment variable DEMAKEIN_ENGINE=cgal
+
+"""
+
 
 import sys, os, math
 
