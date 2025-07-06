@@ -20,17 +20,19 @@ requires-python = ">=3"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Multimedia :: Graphics :: 3D Modeling",
 ]
 
 license = "LGPL-2.1"
 license-files = ["LICENSE"]
 
 dependencies = [
-#    "cffi",
+#    "cffi",      # Needed for CGAL 3D engine, no longer the default 3D engine.
     "trimesh",
-    "manifold3d", # Needed by trimesh for correct boolean operations
-    "scipy",      # Needed by trimesh for convex hull, used in milling
-    "shapely",    # Needed for milling
+    "manifold3d", # Needed by trimesh for correct boolean operations.
+    "scipy",      # Needed by trimesh for convex hull, used in milling.
+    "shapely",    # Needed for milling.
 ]
 
 dynamic = [ "version" ]
@@ -49,3 +51,8 @@ only-include = [ "demakein" ]
 [tool.hatch.version]
 path = "demakein/__init__.py"
 pattern = "VERSION = '(?P<version>[^']+)'"
+
+[tool.hatch.envs.pypy]
+type = "virtual"
+installer = "uv"
+python = "pypy"

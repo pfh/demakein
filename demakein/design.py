@@ -551,6 +551,15 @@ def power_scaler(power, value):
     'to try to make instrument louder, '
     'possibly sacrificing being-in-tuneness.'
     )
+@config.Float_flag("pool",
+    "Optimization pool size will be this times the number of parameters. "
+    "Should be greater than 1. "
+    "Smaller values will optimize faster but may not find the global optimum. "
+    "5 seems sufficient for difficult instruments."
+    )
+@config.Int_flag("workers",
+    "Number of worker processes during optimization."
+    )
 class Instrument_designer(config.Action_with_output_dir):
     instrument_class = Instrument
 
@@ -561,6 +570,9 @@ class Instrument_designer(config.Action_with_output_dir):
     transpose = 0
     
     tweak_emission = 0.0
+    
+    pool = 5.0
+    workers = 1
     
     initial_length = None
     max_length = None
@@ -1112,7 +1124,9 @@ class Instrument_designer(config.Action_with_output_dir):
             os.mkdir(self.output_dir)
 
         state_vec = self.initial_state_vec
-        state_vec = optimize.improve(self.shell_name(), self._constrainer, self._scorer, state_vec, monitor=self._save)
+        state_vec = optimize.improve(
+            self.shell_name(), self._constrainer, self._scorer, state_vec, 
+            pool_factor=self.pool, workers=self.workers, monitor=self._save)
         
         self._save(state_vec)
         

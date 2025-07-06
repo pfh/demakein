@@ -71,16 +71,20 @@ def make_update(vecs, initial_accuracy, do_noise):
     return update
 
 
-def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial_accuracy=0.001, monitor = lambda x,y: None):
-    pool_size = legion.coordinator().get_cores()
-    
-    worker_futs = [ legion.coordinator().new_future() for i in range(pool_size) ]
-    reply_futs = [ ]
-    
-    workers = [
-        legion.future(worker,scorer,fut)
-        for fut in worker_futs 
-        ]
+def show_status(line):
+    print("\r\033[K\r" + line, end="")
+    sys.stdout.flush()
+
+def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial_accuracy=0.001, pool_factor=5, workers=1, monitor = lambda x,y: None):
+    serial = (workers <= 1)
+    if not serial:
+        worker_futs = [ legion.coordinator().new_future() for i in range(workers) ]
+        reply_futs = [ ]
+        
+        workers = [
+            legion.future(worker,scorer,fut)
+            for fut in worker_futs 
+            ]
     
     last_t = 0.0
     try:
@@ -93,35 +97,39 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
         
         n_good = 0
         n_real = 0
-        i = 0
         jobs = [ ]
         
-        pool_size = int(len(best)*5) #5
+        pool_size = int(len(best)*pool_factor) #5
         print(len(best),'parameters, pool size', pool_size)
 
         currents = [ (best, best_score) ]
         
         done = False
-        while not done or reply_futs:
+        while not done or (not serial and reply_futs):
             t = time.time()
             if t > last_t+20.0:
                 def rep(x): 
                     if x[0]: return 'C%.6f' % x[0]
                     return '%.6f' % x[1]
-                grace.status('%s %s %d %d %d %d %s'%(rep(best_score), rep(max(item[1] for item in currents)), len(currents), n_good, n_real, i, comment))
+                status = f"Optimizing {comment} best={rep(best_score)} worst={rep(max(item[1] for item in currents))} pool={len(currents)} n_good={n_good} n_real={n_real}"
+                show_status(status)
+                
                 if best_score[0] == 0:
                     monitor(best, [ item[0] for item in currents ])
                 last_t = time.time()
             
             have_score = False
             
-            if not done and worker_futs:
+            if not done and (serial or worker_futs):
                 new = make_update([item[0] for item in currents], initial_accuracy, len(currents) < pool_size)
                 
                 c_score = constrainer(new)
                 if c_score:
                     have_score = True
                     new_score = (c_score, 0.0)
+                elif workers == 1:
+                    have_score = True
+                    new_score = (0.0, scorer(new))
                 else:
                     reply_fut = legion.coordinator().new_future()
                     worker_fut = worker_futs.pop(0)                    
@@ -168,10 +176,9 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
                 
                 if xspan < xtol or (n_good >= 5000 and fspan < ftol):
                     done = True
-            i += 1
         
-        grace.status('')
-        print('%s %.5f\n' % (comment, best_score[1]))
+        show_status('')
+        print(f"Optimized {comment} best={best_score[1]:.5f}")
         
     finally:
         #pool.terminate()
