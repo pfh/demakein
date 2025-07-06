@@ -184,12 +184,13 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
         #pool.terminate()
         pass
     
-    while worker_futs:
-        fut = worker_futs.pop(0)
-        legion.coordinator().deliver_future(fut, None)
-    
-    for item in workers:
-        item()
+    if not serial:
+        while worker_futs:
+            fut = worker_futs.pop(0)
+            legion.coordinator().deliver_future(fut, None)
+        
+        for item in workers:
+            item()
     
     return best
         
