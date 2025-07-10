@@ -5,15 +5,7 @@ from . import shape
 class Shape(object):
     def __init__(self, mesh):
         self.mesh = mesh
-        
-        # Sometimes I create meshes with identical vertices, eg at the tip of an extrusion
         self.cleanup()
-        #self.check()
-    
-    def check(self):
-        assert self.mesh.is_volume
-        assert self.mesh.is_watertight
-        assert self.mesh.is_winding_consistent
     
     def copy(self):
         return Shape(self.mesh.copy())
@@ -21,19 +13,68 @@ class Shape(object):
     def save(self, filename):
         self.mesh.export(filename)
     
+    def check(self):
+        assert self.mesh.is_volume
+        assert self.mesh.is_watertight
+        assert self.mesh.is_winding_consistent
+    
     def cleanup(self):
-        # TODO: this may be fragile!
-        old = len(self.mesh.faces)
-        self.mesh.merge_vertices(digits_vertex=5) # Merges based on round(position*1e5)
-        self.mesh.update_faces(self.mesh.nondegenerate_faces(height=None))
-        new = len(self.mesh.faces)
-        if old != new:
-            print("Cleaned", old-new, "triangles.")
+        """ Merge all vertices within a small tolerance of each other. Cull degenerate triangles. """
+        import scipy.spatial
+        import trimesh
         
+        tol = 1e-6
+        
+        verts = self.mesh.vertices
+        faces = self.mesh.faces
+        
+        # Union find algorithm
+        parent = list(range(len(verts)))
+        def root(i):
+            root = i
+            while parent[root] != root:
+                root = parent[root]
+            while parent[i] != i:
+                i, parent[i] = parent[i], root
+            return root
+        
+        # Merge all points within tol of each other
+        for i,j in scipy.spatial.KDTree(verts).query_pairs(tol):
+            parent[root(j)] = root(i)
+        
+        # Extract result as a list of groups
+        groups = { }
+        for i in range(len(verts)):
+            r = root(i)
+            if r not in groups: groups[r] = [ ]
+            groups[r].append(i)
+        groups = list(groups.values())
+        
+        if len(groups) != len(verts):
+            print("Consolidated", len(verts)-len(groups), "points.")
+        
+        # Average each group
+        new_verts = [ verts[group].mean(0) for group in groups ]
+        new_index = { }
+        for i, group in enumerate(groups):
+            for j in group:
+                new_index[j] = i
+        
+        # Remap indices and discard degenerate triangles
+        new_faces = [ ]
+        discards = 0
+        for item in faces:
+            item = [ new_index[i] for i in item ]
+            if len(set(item)) < 3: 
+                discards += 1
+                continue
+            new_faces.append(item)
+        
+        if discards:
+            print("Eliminated", discards, "triangles.")
+        
+        self.mesh = trimesh.Trimesh(vertices=new_verts, faces=new_faces)
         self.check()
-        #import trimesh
-        #trimesh.repair.fill_holes(self.mesh)
-        #print(self.mesh.is_volume, self.mesh.is_watertight, self.mesh.is_winding_consistent)
     
     def triangles(self):
         return [ tuple(map(tuple,tri)) for tri in self.mesh.triangles.tolist() ]
@@ -94,19 +135,21 @@ class Shape(object):
         result.cleanup()
         return result
     
+    # Just provides convex hull
     def polygon_mask(self):
-        triangles = self.triangles()
-        
-        things = [ create_polygon_2([ (x,y) for x,y,z in triangle ]) 
-                   for triangle in triangles ]
-
-        if not things:        
-            return empty_shape_2()
-
-        while len(things) > 1:
-            item = things.pop(-1)
-            things[len(things)//2].add(item)
-        return things[0]
+        return hull_2(self.mesh.vertices[:,:2])
+        #triangles = self.triangles()
+        #
+        #things = [ create_polygon_2([ (x,y) for x,y,z in triangle ]) 
+        #           for triangle in triangles ]
+        #
+        #if not things:        
+        #    return empty_shape_2()
+        #
+        #while len(things) > 1:
+        #    item = things.pop(-1)
+        #    things[len(things)//2].add(item)
+        #return things[0]
 
 
 class Shape_2(object):
@@ -152,6 +195,11 @@ def create(verts, faces, name=None):
     mesh = trimesh.Trimesh(vertices=verts, faces=faces)
     return Shape(mesh)
 
+def empty_shape():
+    return create([], [])
+    
+
+
 def empty_shape_2():
     import shapely
     return Shape_2(shapely.Polygon())
@@ -159,3 +207,7 @@ def empty_shape_2():
 def create_polygon_2(points):
     import shapely
     return Shape_2(shapely.Polygon(points))
+
+def hull_2(points):
+    import shapely
+    return Shape_2(shapely.MultiPoint(points).convex_hull)

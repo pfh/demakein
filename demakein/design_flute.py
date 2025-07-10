@@ -94,8 +94,8 @@ dorian_fingerings = [
 
 def fingerings_with_embouchure(fingerings):
     return [
-       (note, fingering+[0])
-       for note, fingering in fingerings
+       (note, fingering+[0], *etc)
+       for note, fingering, *etc in fingerings
        ]
     
     

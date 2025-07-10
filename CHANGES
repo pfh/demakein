@@ -2,6 +2,8 @@
 0.19 - 2025-06-29
        Update to require Python version 3.
        Build system is now "hatch".
+       Add testing shell-script.
+       Small change to Six_hole_whistle_designer, prevent inner bore bulge impacting whistle.
 
 0.18 - 2024-04-27
        Add long description.

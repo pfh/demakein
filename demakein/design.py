@@ -553,8 +553,8 @@ def power_scaler(power, value):
     )
 @config.Float_flag("pool",
     "Optimization pool size will be this times the number of parameters. "
-    "Should be greater than 1. "
-    "Smaller values will optimize faster but may not find the global optimum. "
+    "Smaller values may optimize faster but also may not find the global optimum. "
+    "Should be at least 3. "
     "5 seems sufficient for difficult instruments."
     )
 @config.Int_flag("workers",
@@ -846,10 +846,10 @@ class Instrument_designer(config.Action_with_output_dir):
     
     def score(self, inst):
         inst = self.patch_instrument(inst)
-    
+        
         score = 0.0
         div = 0.0
-
+        
         emission_score = 0.0
         #emission_score2 = 0.0
         emission_div = 0.0
@@ -862,7 +862,7 @@ class Instrument_designer(config.Action_with_output_dir):
         for item in self.fingerings:
             note = item[0]
             fingers = item[1]
-        
+            
             w1 = wavelength(note, self.transpose)
             
             if len(item) < 3:
@@ -871,13 +871,19 @@ class Instrument_designer(config.Action_with_output_dir):
                 w2 = inst.true_nth_wavelength_near(w1, fingers, item[2])
             
             diff = abs(math.log(w1)-math.log(w2))*s
-                                              
+            
             #weight = w1
             weight = 1.0
             #score += weight * diff**3 / (1.0 + (diff/20.0)**2)
+            
+            # Version 0.18 used:
             score += weight * diff**3
+            
+            # Cubic penalty within 100 cents, otherwise linear
+            #score += weight * min(diff,100)**3 #diff**3
+            
             div += weight
-
+            
             #score += (max(0.0,inst.resonance_score(w2/2.0, fingers)) * 1000.0)**3
             #diff += max(0.0,inst.resonance_score(w2/3.0, fingers)) * 100.0
             #diff += max(0.0,inst.resonance_score(w2/4.0, fingers)) * 100.0

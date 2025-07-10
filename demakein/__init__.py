@@ -44,7 +44,7 @@ def main():
             
             'Reed instruments',
             Design_reed_drone,
-            Design_reedpipe,
+            #Design_reedpipe,
             Design_shawm,
             Design_folk_shawm,
             Make_reed_instrument,
@@ -53,7 +53,7 @@ def main():
             Make_windcap,
             Make_bauble,            
             #Make_reed,
-            Make_reed_shaper,
+            #Make_reed_shaper,
             
             'Panpipes',        
             Make_panpipe,

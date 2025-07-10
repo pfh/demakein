@@ -31,7 +31,7 @@ dependencies = [
 #    "cffi",      # Needed for CGAL 3D engine, no longer the default 3D engine.
     "trimesh",
     "manifold3d", # Needed by trimesh for correct boolean operations.
-    "scipy",      # Needed by trimesh for convex hull, used in milling.
+    "scipy",      # Needed by trimesh for convex hull, used in milling. Also KDTree for merging nearby vertices to clean up meshes.
     "shapely",    # Needed for milling.
 ]
 

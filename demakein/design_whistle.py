@@ -103,15 +103,19 @@ class Six_hole_whistle_designer(Design_whistle):
     #def min_hole_spacing(self):
     #    b = self.inner_diameters[-1]
     #    return [ b*1.15 ] * 5 #[ b,b,b*1.25,b,b ]
-
+    
     inner_diameters = design.bore_scaler([ 14.0, 14.0, 20.0, 22.0, 22.0, 20.0, 20.0 ])
     initial_inner_fractions = [ 0.2, 0.6,0.65,0.7,0.75 ]
-    min_inner_fraction_sep = [ 0.01, 0.5 ] + [ 0.01 ] * 4
-
+    
+    # Version 0.18
+    #min_inner_fraction_sep = [ 0.01, 0.5 ] + [ 0.01 ] * 4
+    # Changed 2025-07 -- There needs to be slightly more gap at the top or it impacts the whistle.
+    min_inner_fraction_sep = [ 0.01, 0.5, 0.01, 0.01, 0.01, 0.04 ]
+    
 #    outer_diameters = design.bore_scaler([ 38.0, 28.0, 28.0 ])    
 #    initial_outer_fractions = [ 0.15 ]
 #    min_outer_fraction_sep = [ 0.15, 0.8 ]
-
+    
     outer_diameters = design.bore_scaler([ 40.0, 28.0, 28.0, 32.0, 32.0 ])    
     outer_angles = [ -15.0, (0.0,None), None, None, None ]
     initial_outer_fractions = [ 0.15, 0.5, 0.85 ]

@@ -306,7 +306,7 @@ def deconstruct(outer, bore, top_fractions, bottom_fractions,
                 Packable([temp_outer,temp_bore], 180, dilation),
                 ])
     return result
-
+    
     #return [ [ Packable([outer, bore], 0, dilation),
     #            Packable([outer, bore], 180, dilation) ]
     #          for outer, bore in zip(outers, bores) ]
@@ -324,7 +324,7 @@ def mill_template(xsize, ysize, zsize, dilation):
     shift = 4
     template.put(shift, block_radius,hole_packable)
     template.put(xsize-block_radius*2-shift, block_radius,hole_packable)
-
+    
     #template.put(0,ysize-block_radius*3,hole_packable)
     #template.put(xsize-block_radius*2,ysize-block_radius*3,hole_packable)
     

@@ -3,7 +3,7 @@ import demakein
 from . import config, legion
 
 @config.help("""\
-Design and make all instruments, in a variety of sizes.
+Design and make a selection of instruments, in a variety of sizes.
 ""","""\
 Note that I use the terms "soprano", "alto", "tenor", and "bass" to \
 refer to the sizes of instruments. Flutes and shawms I name this way are actually \
