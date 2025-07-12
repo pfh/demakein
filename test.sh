@@ -47,20 +47,25 @@ demakein design-folk-flute: output/folk-flute
 demakein make-flute: output/folk-flute
 demakein make-flute: output/folk-flute --mill yes
 
+demakein design-pflute: output/pflute
+demakein make-flute: output/pflute
+demakein make-flute: output/pflute --mill yes
+
 demakein design-folk-whistle: output/folk-whistle
 demakein make-whistle: output/folk-whistle
-
-# Currently broken
-#demakein make-whistle: output/folk-whistle --mill yes
+demakein make-whistle: output/folk-whistle --mill yes
 
 demakein design-dorian-whistle: output/dorian-whistle
 demakein make-whistle: output/dorian-whistle
+demakein make-whistle: output/dorian-whistle --mill yes
 
 demakein design-recorder: output/recorder
 demakein make-whistle: output/recorder
+demakein make-whistle: output/recorder --mill yes
 
 demakein design-three-hole-whistle: output/three-hole-whistle
 demakein make-whistle: output/three-hole-whistle
+demakein make-whistle: output/three-hole-whistle --mill yes
 
 
 # Currently broken
@@ -78,6 +83,7 @@ demakein make-reed-instrument: output/folk-shawm --mill yes
 
 demakein design-reed-drone: output/drone
 demakein make-reed-instrument: output/drone
+demakein make-reed-instrument: output/drone --mill yes
 
 demakein make-dock-extender: output/dock-extender
 

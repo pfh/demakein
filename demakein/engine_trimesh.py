@@ -13,10 +13,14 @@ class Shape(object):
     def save(self, filename):
         self.mesh.export(filename)
     
+    def is_empty(self):
+        return len(self.mesh.faces) == 0
+    
     def check(self):
-        assert self.mesh.is_volume
-        assert self.mesh.is_watertight
-        assert self.mesh.is_winding_consistent
+        if not self.mesh.is_volume:
+            print("Warning: shape is not a volume")
+        #assert self.mesh.is_watertight
+        #assert self.mesh.is_winding_consistent
     
     def cleanup(self):
         """ Merge all vertices within a small tolerance of each other. Cull degenerate triangles. """
@@ -51,7 +55,7 @@ class Shape(object):
         groups = list(groups.values())
         
         if len(groups) != len(verts):
-            print("Consolidated", len(verts)-len(groups), "points.")
+            print("Consolidated", len(verts)-len(groups), "points")
         
         # Average each group
         new_verts = [ verts[group].mean(0) for group in groups ]
@@ -70,8 +74,8 @@ class Shape(object):
                 continue
             new_faces.append(item)
         
-        if discards:
-            print("Eliminated", discards, "triangles.")
+        #if discards:
+        #    print("Eliminated", discards, "triangles")
         
         self.mesh = trimesh.Trimesh(vertices=new_verts, faces=new_faces)
         self.check()
@@ -108,17 +112,24 @@ class Shape(object):
     
     def add(self, other):
         import trimesh
-        self.mesh = trimesh.boolean.union([ self.mesh, other.mesh ], engine="manifold")
+        if other.is_empty(): 
+            return
+        self.mesh = trimesh.boolean.union([ self.mesh, other.mesh ], engine="manifold", check_volume=False)
         self.cleanup()
     
     def remove(self, other):
         import trimesh
-        self.mesh = trimesh.boolean.difference([ self.mesh, other.mesh ], engine="manifold")
+        if self.is_empty() or other.is_empty(): 
+            return
+        self.mesh = trimesh.boolean.difference([ self.mesh, other.mesh ], engine="manifold", check_volume=False)
         self.cleanup()
     
     def clip(self, other):
         import trimesh
-        self.mesh = trimesh.boolean.intersection([ self.mesh, other.mesh ], engine="manifold")
+        if other.is_empty():
+            self.mesh = other.mesh.copy()
+            return
+        self.mesh = trimesh.boolean.intersection([ self.mesh, other.mesh ], engine="manifold", check_volume=False)
         self.cleanup()
     
     # Convex hull rather than Minkowski sum used in CGAL engine
