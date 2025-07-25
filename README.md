@@ -17,11 +17,26 @@ This generally consists of two stages:
 Demakein can either be used via the command "demakein" or as a library in Python. Demakein has been designed to be extensible, and I hope you will find it relatively easy to write code to create your own novel instruments. You can either create subclasses of existing classes in order to tweak a few parameters, or create wholly new classes using existing examples as a template.
 
 
+## Using Demakein with uv (recommended)
+
+[uv](https://docs.astral.sh/uv/) is currently (2025) the easiest way to install and use Python 3 packages. Once uv is installed, the `uvx` command will let you run Demakein from the command line, ideally using PyPy for speed:
+
+```
+uvx -p pypy demakein
+```
+
+To use the GitHub version of Demakein:
+
+```
+uvx -p pypy git+https://github.com/pfh/demakein
+```
+
+uv also makes it easy to use Demakein as a dependency in your own scripts, if you want to develop your own instruments.
 
 
 ## Installing Demakein
 
-You will need Python 3. Ideally install in a virtual environment:
+You will need Python 3. Ideally install Demakein in a virtual environment. Demakein can be installed using pip:
 
 ```
 pip install demakein
