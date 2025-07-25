@@ -188,11 +188,15 @@ class Instrument:
             closed_top - is the mouthpiece closed (eg reed) or open (eg ney)
             cone_step - inner profile step size for conical segments of inner profile
         
-        Then call:
+        Old version, call:
             .prepare()
                - prepare to handle queries
-    
-            .evaluate(wavelength)
+            .resonance_score(wavelength, fingers)
+        
+        New version, call:
+            .prepare_phase()
+               - prepare to handle queries
+            .resonance_phase(wavelength, fingers)
     """
     
     def prepare(self):
@@ -551,12 +555,6 @@ def power_scaler(power, value):
     'to try to make instrument louder, '
     'possibly sacrificing being-in-tuneness.'
     )
-@config.Float_flag("pool",
-    "Optimization pool size will be this times the number of parameters. "
-    "Smaller values may optimize faster but also may not find the global optimum. "
-    "Should be at least 3. "
-    "5 seems sufficient for difficult instruments."
-    )
 @config.Int_flag("workers",
     "Number of worker processes during optimization."
     )
@@ -571,7 +569,6 @@ class Instrument_designer(config.Action_with_output_dir):
     
     tweak_emission = 0.0
     
-    pool = 5.0
     workers = 1
     
     initial_length = None
@@ -880,7 +877,7 @@ class Instrument_designer(config.Action_with_output_dir):
             score += weight * diff**3
             
             # Cubic penalty within 100 cents, otherwise linear
-            #score += weight * min(diff,100)**3 #diff**3
+            #score += weight * diff * min(diff,100)**2
             
             div += weight
             
@@ -1132,7 +1129,7 @@ class Instrument_designer(config.Action_with_output_dir):
         state_vec = self.initial_state_vec
         state_vec = optimize.improve(
             self.shell_name(), self._constrainer, self._scorer, state_vec, 
-            pool_factor=self.pool, workers=self.workers, monitor=self._save)
+            workers=self.workers, monitor=self._save)
         
         self._save(state_vec)
         

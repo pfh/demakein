@@ -64,7 +64,11 @@ SCALE = [
 #]
 
 def make_hole(diameter, length):
-    pos = [ 0.0 ]
+    #pos = [ 0.0 ]
+    
+    # Extend a little beyond instrument to avoid boolean ops errors
+    pos = [ -1.0 ]
+    
     diam = [ diameter ]
     
     radius = diameter*0.5

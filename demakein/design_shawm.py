@@ -244,9 +244,9 @@ class Design_shawm(Shawm_designer):
     hole_horiz_angles = [ 30.0, -25.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 180.0 ]
 
     with_fingerpad = [0,1,1,1,1,1,1,1,1]
-        
+    
     initial_length = design.wavelength('B3') * 0.35
-
+    
     fingerings = [
         ('B3',  [1, 1,1,1,1,1,1,1,1], 1),
         ('B4',  [1, 1,1,1,1,1,1,1,1], 2),

@@ -83,7 +83,6 @@ demakein make-reed-instrument: output/folk-shawm --mill yes
 
 demakein design-reed-drone: output/drone
 demakein make-reed-instrument: output/drone
-demakein make-reed-instrument: output/drone --mill yes
 
 demakein make-dock-extender: output/dock-extender
 
@@ -96,4 +95,3 @@ demakein make-mouthpiece: output/mouthpiece
 # Omnibus collection
 
 demakein all: output/all
-

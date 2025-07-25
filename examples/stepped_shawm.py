@@ -1,7 +1,7 @@
 
 import demakein
 
-class Design_simple_shawm(demakein.design.Instrument_designer):
+class Design_stepped_shawm(demakein.design.Instrument_designer):
     closed_top = True
 
     # Bore will be 35mm at end, 4mm at top
@@ -48,7 +48,7 @@ class Design_simple_shawm(demakein.design.Instrument_designer):
     ]    
 
 if __name__ == '__main__':
-    demakein.run_tool(Design_simple_shawm)
+    demakein.run_tool(Design_stepped_shawm)
     
     # or
     #nesoni.run_toolbox([ 

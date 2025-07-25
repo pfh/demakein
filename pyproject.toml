@@ -15,7 +15,7 @@ description = "Design woodwind instruments and make them with a 3D printer or CN
 
 readme = "README.md"
 
-requires-python = ">=3"
+requires-python = ">=3.8"
 
 classifiers = [
     "Programming Language :: Python :: 3",

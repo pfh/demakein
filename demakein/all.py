@@ -12,13 +12,13 @@ an octave above the singing voices of the same name.
 @config.Bool_flag('panpipes', 'Do panpipes.')
 @config.Bool_flag('flutes', 'Do flutes.')
 @config.Bool_flag('whistles', 'Do whistles.')
-@config.Bool_flag('shawms', 'Do shawms.')
+@config.Bool_flag('shawms', 'Do shawms. May be broken.')
 @config.String_flag('version', 'version code, for file names')
 class All(config.Action_with_output_dir):
     panpipes = True
     flutes = True
     whistles = True
-    shawms = True
+    shawms = False
     version = 'v'+demakein.VERSION.lstrip('0.')
     
     def _do_flute(self, model_name, model_code, size_name, size_code, designer, transpose):
@@ -46,7 +46,7 @@ class All(config.Action_with_output_dir):
             bore=bore,
             ).make()
 
-        demakein.Make_shawm(
+        demakein.Make_reed_instrument(
             outdir,
             prefix=model_code+size_code+'-'+self.version+'-',
             decorate=True,
@@ -69,14 +69,11 @@ class All(config.Action_with_output_dir):
     def run(self):
         workspace = self.get_workspace()
         
-        stage = legion.Stage()
-        
         if self.panpipes:
             if self.make:
                 demakein.Make_panpipe(
                     workspace/'panpipe'
-                    ).process_make(stage)
-                stage.barrier()
+                    ).make()
         
         if self.flutes:
             for model_name, model_code, designer in [
@@ -92,8 +89,7 @@ class All(config.Action_with_output_dir):
                         ('alto', 'a', 5),
                         ('soprano', 's', 12),
                         ]:
-                    stage.process(self._do_flute,model_name,model_code,size_name,size_code,designer,transpose)
-                    stage.barrier()
+                    self._do_flute(model_name,model_code,size_name,size_code,designer,transpose)
         
         if self.whistles:
             for model_name, model_code in [
@@ -105,8 +101,7 @@ class All(config.Action_with_output_dir):
                         ('soprano', 's', 12),
                         ('sopranino', 'ss', 17),
                         ]:
-                    stage.process(self._do_folk_whistle,model_name,model_code,size_name,size_code,transpose)
-                    stage.barrier()
+                    self._do_folk_whistle(model_name,model_code,size_name,size_code,transpose)
         
         if self.shawms:
             for model_name, model_code, designer in [
@@ -119,9 +114,6 @@ class All(config.Action_with_output_dir):
                          ('6mm-tenor', '6t', 0, 6.0),
                          ('6mm-bass', '6b', -7, 6.0),
                          ]:
-                     stage.process(self._do_shawm,model_name,model_code,size_name,size_code,designer,transpose,bore)
-                     stage.barrier()
-        
-        stage.barrier()
+                     self._do_shawm(model_name,model_code,size_name,size_code,designer,transpose,bore)
 
 
