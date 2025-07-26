@@ -2,8 +2,11 @@
 1.1  - 2025-07-27
        Update to require Python version 3.
        Build system is now "hatch".
+       Use trimesh package for 3D models, with manifold3d as underlying boolean ops engine (rather than CGAL).
        Add testing shell-script.
+       Optimizer now runs in a single process by default as multi-processing didn't seem to help.
        Small change to Six_hole_whistle_designer, prevent inner bore bulge impacting whistle.
+       Small change to Make_whistle, cut a tiny bit below the head to avoid boolean ops problems.
 
 0.18 - 2024-04-27
        Add long description.

@@ -206,7 +206,9 @@ Produce 3D models using the output of "demakein design-*-whistle:".
 class Make_whistle(make.Make_millable_instrument):
     def get_cuts(self):
         cuts = super(Make_whistle,self).get_cuts()
-        return [ item + [ self.working.spec.length ] for item in cuts ]
+        # Cutting exactly at the head can leave a sliver of material below it.
+        micro_pad = 1e-3
+        return [ item + [ self.working.spec.length-micro_pad ] for item in cuts ]
     
     def run(self):
         working = self.working
