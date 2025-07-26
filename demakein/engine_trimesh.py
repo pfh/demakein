@@ -27,7 +27,7 @@ class Shape(object):
         import scipy.spatial
         import trimesh
         
-        tol = 1e-6
+        tol = 1e-4
         
         verts = self.mesh.vertices
         faces = self.mesh.faces

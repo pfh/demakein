@@ -74,8 +74,13 @@ def sketch(thing, outname):
             #normal = numpy.cross(a[1]-a[0],a[2]-a[0])
             normal = cross(sub(tri[1],tri[0]),sub(tri[2],tri[0]))
             length = math.sqrt(normal[0]**2+normal[1]**2+normal[2]**2)
+            
+            if length == 0.0:
+                print("Warning: Zero area triangle in sketch.")
+                continue
+            
             normal = (normal[0]/length,normal[1]/length,normal[2]/length)
-                
+            
             
             lines[(tri[0],tri[1])].append( normal )
             lines[(tri[1],tri[2])].append( normal )
