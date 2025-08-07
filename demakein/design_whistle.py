@@ -127,7 +127,10 @@ class Six_hole_whistle_designer(Design_whistle):
 Design a whistle with pennywhistle fingering.
 """)
 class Design_folk_whistle(Six_hole_whistle_designer):    
-    initial_length = design.wavelength('D4') * 0.5
+    #initial_length = design.wavelength('D4') * 0.5
+    @property
+    def initial_length(self):
+        return 0.5*design.wavelength("D4", speed_of_sound=self.speed_of_sound)
     
     fingerings = [
         ('D4',   [1,1,1,1,1,1]),
@@ -153,7 +156,10 @@ class Design_folk_whistle(Six_hole_whistle_designer):
 Design a whistle that plays a dorian scale.
 """)
 class Design_dorian_whistle(Six_hole_whistle_designer):    
-    initial_length = design.wavelength('D4') * 0.5
+    #initial_length = design.wavelength('D4') * 0.5
+    @property
+    def initial_length(self):
+        return 0.5*design.wavelength("D4", speed_of_sound=self.speed_of_sound)
     
     fingerings = [
         ('D4',   [1,1,1,1,1,1]),
@@ -189,7 +195,10 @@ class Design_recorder(Design_whistle):
         [(0,0),(2,0),(4,0),(7,0),(7,0.5)],
         ]
     
-    initial_length = design.wavelength('C4') * 0.5
+    #initial_length = design.wavelength('C4') * 0.5
+    @property
+    def initial_length(self):
+        return 0.5*design.wavelength("C4", speed_of_sound=self.speed_of_sound)
     
     min_hole_diameters = design.bore_scaler([ 3.0 ]*8)
     max_hole_diameters = design.bore_scaler([ 12.0 ] + [ 14.0 ]*7)
@@ -286,7 +295,10 @@ class Design_three_hole_whistle(Design_whistle):
     xpad = 0.0
     ypad = 1.0
     
-    initial_length = design.wavelength('D3') * 0.5
+    #initial_length = design.wavelength('D3') * 0.5
+    @property
+    def initial_length(self):
+        return 0.5*design.wavelength("D3", speed_of_sound=self.speed_of_sound)
     
     min_hole_diameters = design.bore_scaler([ 3.0 ]*3)
     max_hole_diameters = design.bore_scaler([ 14.0 ]*3)

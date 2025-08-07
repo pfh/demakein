@@ -111,7 +111,11 @@ class Design_reed_drone(Reed_instrument_designer):
     hole_horiz_angles = [ ]
     with_fingerpad = [ ]
     
-    initial_length = design.wavelength('C4') * 0.25
+    #initial_length = design.wavelength('C4') * 0.25
+    @property
+    def initial_length(self):
+        return 0.25*design.wavelength("C4", speed_of_sound=self.speed_of_sound)
+    
     fingerings = [ ('C4', [], 1) ]
     
     divisions = [ () ]
@@ -134,7 +138,10 @@ class Design_reedpipe(Reed_instrument_designer):
 
     with_fingerpad = [1,1,1,1,1,1,1,1]
         
-    initial_length = design.wavelength('C4') * 0.25
+    #initial_length = design.wavelength('C4') * 0.25
+    @property
+    def initial_length(self):
+        return 0.25*design.wavelength("C4", speed_of_sound=self.speed_of_sound)
 
     fingerings = [
         ('C4',  [1,1,1,1,1,1,1,1], 1),
@@ -245,7 +252,10 @@ class Design_shawm(Shawm_designer):
 
     with_fingerpad = [0,1,1,1,1,1,1,1,1]
     
-    initial_length = design.wavelength('B3') * 0.35
+    #initial_length = design.wavelength('B3') * 0.35
+    @property
+    def initial_length(self):
+        return 0.35*design.wavelength("B3", speed_of_sound=self.speed_of_sound)
     
     fingerings = [
         ('B3',  [1, 1,1,1,1,1,1,1,1], 1),
@@ -388,9 +398,13 @@ class Design_folk_shawm(Shawm_designer):
     
     with_fingerpad = [0,1,1,1,1,1,1]
     
-    initial_length = design.wavelength('C4') * 0.5
+    #initial_length = design.wavelength('C4') * 0.5
+    @property
+    def initial_length(self):
+        return 0.5*design.wavelength("C4", speed_of_sound=self.speed_of_sound)
+    
     #max_length     = design.wavelength('C4') * 0.6
-
+    
     fingerings = [
         ('C4',  [1, 1,1,1,1,1,1], 1),
         ('C5',  [1, 1,1,1,1,1,1], 2),

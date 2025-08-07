@@ -22,8 +22,8 @@ from . import config
 
 # ===== Utility constants and functions =====
 
-SPEED_OF_SOUND = 346100.0 # mm/sec at 25C
-                          #           30C is 349000
+#SPEED_OF_SOUND = 346100.0 # mm/sec at 25C
+#                          #           30C is 349000
 
 semitone_name = [ 'C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B' ] 
 
@@ -62,9 +62,18 @@ def fqc(note):
     return 440.0 * 2**((s-57)/12.0) * mult
 
 
-def wavelength(w, transpose=0):
+def wavelength(w, transpose=0, speed_of_sound=None):
+    """
+    Wavelength of a note in mm, possibly after transposition by some number of semitones.
+    
+    If w is a string, it's converted to wavelength.
+    
+    If w is a float, it's treated as a wavelength, and only the transposition is applied.
+    
+    speed_of_sound should be specified in m/s.
+    """
     if isinstance(w, str): 
-        w = SPEED_OF_SOUND / fqc(w)
+        w = speed_of_sound / fqc(w)
     return w / (2**(transpose/12.0))
 
 
@@ -72,8 +81,8 @@ def log2(x):
     return math.log(x) / math.log(2.0)
 
 
-def describe(w):
-    f = SPEED_OF_SOUND / w
+def describe(w, speed_of_sound=None):
+    f = speed_of_sound / w
     
     s = int(round( log2(f/440.0) * 12.0 + 57 ))
     octave = s // 12
@@ -549,6 +558,8 @@ def power_scaler(power, value):
 
 
 @config.Int_flag('transpose', 'Transpose instrument by this many semitones.')
+@config.Float_flag("speed_of_sound",
+    "Speed of sound in mm per second. Default of 346100 is for 25C air. Wikipedia suggests the formula 331300+606*T where T is the temperature in celcius.")
 @config.Float_flag('tweak_emission', 
     'Experimental. '
     'Add a term to the optimization '
@@ -560,11 +571,14 @@ def power_scaler(power, value):
     )
 class Instrument_designer(config.Action_with_output_dir):
     instrument_class = Instrument
-
+    
+    speed_of_sound = 346100 # mm/sec at 25C
+                            # 30C is 349000
+    
     cone_step = 0.125  #diameter step size when approximating cones
-
+    
     closed_top = False
-
+    
     transpose = 0
     
     tweak_emission = 0.0
@@ -573,7 +587,7 @@ class Instrument_designer(config.Action_with_output_dir):
     
     initial_length = None
     max_length = None
-
+    
     fingerings = [ ]
     
     inner_diameters = [ ]             #diameters of inner bore: first is diam at bottom, last is diam at top
@@ -587,18 +601,18 @@ class Instrument_designer(config.Action_with_output_dir):
     def outer_angles(self): return [ None ] * len(self.outer_diameters)
     
     max_hole_diameters = [ ]
-
+    
     top_clearance_fraction = 0.0
     bottom_clearance_fraction = 0.0
-
+    
     @property
     def scale(self):
         return 2.0**(-self.transpose/12.0)
-
+    
     @property
     def n_holes(self):
         return len(self.max_hole_diameters)
-
+    
     @property
     def min_hole_diameters(self):
         return [ 0.5 ] * self.n_holes
@@ -606,11 +620,11 @@ class Instrument_designer(config.Action_with_output_dir):
     @property
     def min_hole_spacing(self):
         return [ 0.0 ] * (self.n_holes-1)
-
+    
     @property
     def max_hole_spacing(self):
         return [ self.initial_length ] * (self.n_holes-1)
-
+    
     @property
     def balance(self):
         return [ None ] * (self.n_holes-2)
@@ -619,55 +633,55 @@ class Instrument_designer(config.Action_with_output_dir):
     @property
     def hole_angles(self):
         return [ 0.0 ] * self.n_holes
-
+    
     #n-2 initial positions of bore kinks, as fraction of initial length
     @property
     def initial_inner_fractions(self):
         return [ (i+1.0)/(len(self.inner_diameters)-1) for i in range(len(self.inner_diameters)-2) ]
-
+    
     @property
     def min_inner_fraction_sep(self):
         return [ 0.0 ] * (len(self.inner_diameters)-1)
-
+    
     @property
     def max_inner_fraction_sep(self):
         return [ 1.0 ] * (len(self.inner_diameters)-1)
-
+    
     @property
     def min_inner_sep(self):
         return [ None ] * (len(self.inner_diameters)-1)
-
+    
     @property
     def max_inner_sep(self):
         return [ None ] * (len(self.inner_diameters)-1)
-
-
-
+    
+    
+    
     @property
     def initial_outer_fractions(self):
         return [ (i+1.0)/(len(self.outer_diameters)-1) for i in range(len(self.outer_diameters)-2) ]
-
+    
     @property
     def min_outer_fraction_sep(self):
         return [ 0.0 ] * (len(self.outer_diameters)-1)
-
+    
     @property
     def max_outer_fraction_sep(self):
         return [ 1.0 ] * (len(self.outer_diameters)-1)
-
+    
     @property
     def initial_hole_fractions(self):
         return [ (i+3.0)/(self.n_holes+2) * 0.5 for i in range(self.n_holes) ]
-
+    
     @property
     def initial_hole_diameter_fractions(self):
         return [ 0.75 ] * self.n_holes
-
+    
     #@property
     #def hole_extra_height_by_diameter(self):
     #    return [ 0.0 ] * self.n_holes
-
-
+    
+    
     #state_vars = [
     #    'length',
     #    'hole_fractions',
@@ -678,7 +692,7 @@ class Instrument_designer(config.Action_with_output_dir):
     #    ]
     #...
     #
-
+    
     @property
     def initial_state_vec(self):
         assert len(self.initial_hole_fractions) == self.n_holes, 'initial_hole_fractions has wrong length'
@@ -692,8 +706,8 @@ class Instrument_designer(config.Action_with_output_dir):
             self.initial_inner_fractions +
             self.initial_outer_fractions
         )
-
-
+    
+    
     def unpack(self, state_vec):
         inner_low, inner_high = low_high(self.inner_diameters)
         outer_low, outer_high = low_high(self.outer_diameters)
@@ -761,7 +775,7 @@ class Instrument_designer(config.Action_with_output_dir):
         inst.cone_step = self.cone_step
         inst.closed_top = self.closed_top
         return inst
-
+    
     
     def constraint_score(self, inst):
         """ Return an amount of constraint dissatisfaction """
@@ -860,7 +874,7 @@ class Instrument_designer(config.Action_with_output_dir):
             note = item[0]
             fingers = item[1]
             
-            w1 = wavelength(note, self.transpose)
+            w1 = wavelength(note, self.transpose, speed_of_sound=self.speed_of_sound)
             
             if len(item) < 3:
                 w2 = inst.true_wavelength_near(w1, fingers)
@@ -910,13 +924,13 @@ class Instrument_designer(config.Action_with_output_dir):
         
         
         #return ( (score/scale) ** (1.0/2) )*100.0
-
+    
     def _constrainer(self, state_vec):
         return self.constraint_score(self.unpack(state_vec))
-
+    
     def _scorer(self, state_vec):
         return self.score(self.unpack(state_vec))
-
+    
     #def _opt_score(self, state_vec):
     #    inst = self.unpack(state_vec)
     #    
@@ -926,7 +940,7 @@ class Instrument_designer(config.Action_with_output_dir):
     #    else:
     #        result = (0.0, self.score(inst))
     #    return result
-
+    
     
     def _draw(self, diagram, state_vec, color='#000000', red_color='#ff0000'):
         instrument = self.unpack( state_vec )
@@ -952,7 +966,7 @@ class Instrument_designer(config.Action_with_output_dir):
             diagram.line([(tick_x-10,-pos),(tick_x-15,-pos)], color)
         for pos in instrument.outer.pos[1:-1]:
             diagram.line([(tick_x-12,-pos),(tick_x-13,-pos)], color)
-
+    
     
     def _save(self, state_vec, other_vecs=[]):
         self.state_vec = state_vec
@@ -1023,13 +1037,13 @@ class Instrument_designer(config.Action_with_output_dir):
             note = item[0]
             fingers = item[1]
         
-            w1 = wavelength(note, self.transpose)
+            w1 = wavelength(note, self.transpose, speed_of_sound=self.speed_of_sound)
             if len(item) < 3:
                 w2 = patched_instrument.true_wavelength_near(w1, fingers)
             else:
                 w2 = patched_instrument.true_nth_wavelength_near(w1, fingers, item[2])
             cents = int(round( log2(w2/w1) * 1200.0 ))
-
+            
             n_probes = 301
             max_cents = 2400.0
             width = 200.0
@@ -1043,10 +1057,10 @@ class Instrument_designer(config.Action_with_output_dir):
             #for i in range(len(probes)-1):
             #    if scores[i] > 0 and scores[i+1] < 0: continue
             #    diagram.line(points[i:i+2], '#000000', 0.2)
-
-
+            
+            
             scores = [ patched_instrument.resonance_phase(probe, fingers) for probe in probes ]
-
+            
             points = [ (graph_x+i*width/n_probes,text_y-(((score+0.5)%1.0)-0.5)*14.0)
                        for i,score in enumerate(scores) ]
             for i in range(len(probes)-1):
@@ -1055,14 +1069,16 @@ class Instrument_designer(config.Action_with_output_dir):
                 r,g,b = [ int((math.cos((c/5.0+offset) * math.pi*2.0)*0.5+0.5) * 200) 
                           for offset in [0.0,1.0/3,2.0/3] ]
                 diagram.line(points[i:i+2], '#%02x%02x%02x' % (r,g,b), 0.2)
-
-
+            
+            
             diagram.line([(graph_x+width*0.5,text_y+7),(graph_x+width*0.5,text_y-7)], '#0000ff', 0.2)
             diagram.line([(graph_x,text_y),(graph_x+width,text_y)], '#0000ff', 0.2)
-
-            diagram.text(text_x, text_y,
-                  '%5s %s %-4d cents' % (describe(w1), '     ' if cents == 0 else ' flat' if cents > 0 else 'sharp', abs(cents))
-            )
+            
+            diagram.text(text_x, text_y, '%5s %s %-4d cents' % (
+                describe(w1, speed_of_sound=self.speed_of_sound), 
+                '     ' if cents == 0 else ' flat' if cents > 0 else 'sharp', 
+                abs(cents)
+            ))
             
             #_, emission = patched_instrument.resonance_score(w2,fingers,True)
             #diagram.text(emit_x, text_y,
