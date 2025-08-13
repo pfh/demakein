@@ -81,14 +81,21 @@ def log2(x):
     return math.log(x) / math.log(2.0)
 
 
-def describe(w, speed_of_sound=None):
-    f = speed_of_sound / w
-    
-    s = int(round( log2(f/440.0) * 12.0 + 57 ))
+def describe_fqc(fqc) :
+    """
+    Describe a frequency in Hz.
+    """
+    s = int(round( log2(fqc/440.0) * 12.0 + 57 ))
     octave = s // 12
     s = s % 12
-    
     return semitone_name[s] + str(octave)
+
+
+def describe(w, speed_of_sound=None):
+    """
+    Describe a wavelength in mm.
+    """
+    return describe_fqc(speed_of_sound / w)
 
 
 

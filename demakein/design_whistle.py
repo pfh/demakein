@@ -39,7 +39,7 @@ class Design_whistle(design.Instrument_designer_with_bore_scale):
     ypad = 0.0
     
     def patch_instrument(self, inst):
-        inst = copy.copy(inst)
+        inst = copy.deepcopy(inst)
         inst.true_length = inst.length
         inst.true_inner = inst.inner
         

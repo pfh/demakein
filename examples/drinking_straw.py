@@ -14,7 +14,7 @@ import demakein
 
 class Reedpipe(demakein.design.Instrument_designer):
     def patch_instrument(self, inst):
-        inst = copy.copy(inst)
+        inst = copy.deepcopy(inst)
         inst.length /= 0.85
         return inst
 

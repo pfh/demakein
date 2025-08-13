@@ -88,7 +88,7 @@ class Reed_instrument_designer(design.Instrument_designer):
     closed_top = True
 
     def patch_instrument(self, inst):
-        inst = copy.copy(inst)
+        inst = copy.deepcopy(inst)
         inst.true_length = inst.length
         inst.true_inner = inst.inner
         
@@ -213,7 +213,7 @@ class Shawm_designer(Reed_instrument_designer):
 #    #max_grad = 10.0
 #    
 #    def patch_instrument(self, inst):
-#        inst = copy.copy(inst)
+#        inst = copy.deepcopy(inst)
 #        
 #        extra_length = self.bore * self.tweak_reed_length
 #        extra_inner = profile.make_profile([

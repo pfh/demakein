@@ -17,6 +17,7 @@ Produce 3D models using the output of "demakein design-*-flute:"
 @config.Float_flag('emb_squareness', 'Squareness of embouchure hole, larger = squarer.')
 @config.Float_flag('emb_aspect', 'Aspect ratio of embouchure hole, 1 = square, larger = wider.')
 @config.Bool_flag('decorate', 'Add some decorations')
+@config.String_flag("pattern", "Pattern of decoration, comma separated list.")
 class Make_flute(make.Make_millable_instrument):
     #mill = False
     open = False
@@ -30,6 +31,7 @@ class Make_flute(make.Make_millable_instrument):
     emb_squareness = 0.0
     emb_aspect = 1.5    
     decorate = False
+    pattern = "1,1"
     
     #SCHEMES = {
     #    2 : [
@@ -71,16 +73,19 @@ class Make_flute(make.Make_millable_instrument):
         
         outer_profile = spec.outer.clipped(0,length)
         if self.decorate:
-           emfrac = 1.0-spec.hole_positions[-1]/length
-           for frac, align in [ (1.0-emfrac*2,1.0), (1.0,-1.0) ]:
-               dpos = length * frac
-               damount = outer_profile(dpos)*0.1
-               dpos += damount * align
-               deco_profile = profile.Profile(
-                   [ dpos+damount*i for i in [-1,-0.333,0.333,1]],
-                   [ damount*i      for i in [0,1,1,0] ],
-               )
-               outer_profile = outer_profile + deco_profile
+            decor = [0] + [ float(item) for item in self.pattern.split(",") ] + [0]
+            emfrac = 1.0-spec.hole_positions[-1]/length
+            for frac, align in [ (1.0-emfrac*2,0.0), (1.0,-1.0) ]:
+                dpos = length * frac
+                damount = outer_profile(dpos)*0.1
+                dstep = damount*2/3
+                dlength = dstep*(len(decor)-1)
+                dpos += dlength * align
+                deco_profile = profile.Profile(
+                    [ dpos+dstep*i for i in range(len(decor))],
+                    [ damount*i    for i in decor],
+                )
+                outer_profile = outer_profile + deco_profile
 
 
         if self.emb_aspect > 1.0:

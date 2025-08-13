@@ -104,6 +104,8 @@ def fingerings_with_embouchure(fingerings):
     'Constant controlling extra effective height of the embouchure hole due to lips, etc. '
     'Small adjustments of this value will change the angle at which the flute needs to be blown '
     'in order to be in tune.')
+@config.Float_flag('embdiam', 
+    'Constant controlling effective diameter adjustment of the embouchure hole due to lips, etc.')
 class Flute_designer(design.Instrument_designer_with_bore_scale):
     closed_top = True
     
@@ -115,10 +117,12 @@ class Flute_designer(design.Instrument_designer_with_bore_scale):
     # 0.56                 ~ definitely high, printed plastic sop flute
     
     embextra = 0.53
-
+    embdiam  = 1.0
+    
     def patch_instrument(self, inst):
-        inst = copy.copy(inst)        
+        inst = copy.deepcopy(inst)        
         inst.hole_lengths[-1] += inst.hole_diameters[-1] * self.embextra
+        inst.hole_diameters[-1] *= self.embdiam
         return inst
 
     def calc_emission(self, emission, fingers):

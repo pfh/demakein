@@ -178,7 +178,7 @@ def improve(comment, constrainer, scorer, start_x, ftol=1e-4, xtol=1e-6, initial
             
             fspan = (max(item[1] for item in currents)[1]-best_score[1]) 
             
-            if xspan < xtol or (n_good >= 5000 and fspan < ftol):
+            if xspan < xtol or (n_real >= 10000 and fspan < ftol):
                 done = True
         
         # Give up if completely stuck
