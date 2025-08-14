@@ -16,15 +16,15 @@ class Observation(object): pass
     'Resultant parameters should then result in a correctly tuned instrument '
     'when the design tool is run again.',
     )
+@config.Positional(
+    'param',
+    'Comma separated list of parameters to tweak.'
+    )
 @config.Main_section(
     'observations',
     'Comma separated lists of frequency followed by '
     'whether each finger hole is open (0) or closed (1) '
     '(from bottom to top).'
-    )
-@config.String_flag(
-    'param',
-    'Comma separated list of parameters to tweak.'
     )
 class Tune(config.Action_with_working_dir):
     param = ""

@@ -229,7 +229,7 @@ class Shawm_designer(Reed_instrument_designer):
 
 
 @config.help("""\
-Design a shawm / haut-bois / oboe / bombard. Fingering system similar to recorder.
+[Currently broken] Design a shawm / haut-bois / oboe / bombard. Fingering system similar to recorder.
 """,
 """\
 The flare at the end is purely decorative.
@@ -363,7 +363,7 @@ class Design_shawm(Shawm_designer):
 
 
 @config.help("""\
-Design a shawm / haut-bois / oboe / bombard. Simple fingering system with compact hole placement.
+[Currently broken] Design a shawm / haut-bois / oboe / bombard. Simple fingering system with compact hole placement.
 """,
 """\
 The flare at the end is purely decorative.

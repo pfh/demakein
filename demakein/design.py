@@ -1093,7 +1093,7 @@ class Instrument_designer(config.Action_with_output_dir):
             #     )
             
             phase = patched_instrument.resonance_phase(w2,fingers)
-            diagram.text(emit_x, text_y, "%f" % phase)
+            diagram.text(emit_x, text_y, "%.2f" % phase)
             
             #if any_extra:
             #w3 = mod_instrument.true_wavelength_near(w1, fingers)
