@@ -1,5 +1,5 @@
 
-import math
+import math, copy
 
 from . import config, design, optimize
 
@@ -7,6 +7,32 @@ from . import config, design, optimize
 class Working(object): pass
 
 class Observation(object): pass
+
+class Getsetter(object):
+    def set_designer(self, designer, value):
+        return designer
+    def set_inst(self, inst, value):
+        return inst
+
+class Flag_getsetter(Getsetter):
+    def __init__(self, name):
+        self.name = name
+    def get(self, designer, inst):
+        return getattr(designer,self.name)
+    def set_designer(self, designer, value):
+        return designer(**{ self.name: value })
+
+class Array_getsetter(Getsetter):
+    def __init__(self, name, index):
+        self.name = name
+        self.index = index
+    def get(self, designer, inst):
+        return getattr(inst,self.name)[self.index]
+    def set_inst(self, inst, value):
+        inst = copy.deepcopy(inst)
+        getattr(inst,self.name)[self.index] = value
+        return inst
+
 
 @config.help(
     'Modelling the mouthpiece is more difficult than modelling the body of an '
@@ -37,7 +63,7 @@ class Tune(config.Action_with_working_dir):
     def _current_param(self):
         result = { }
         for key in list(self.working.fixed_param) + self.working.opt_param:
-            result[key] = getattr(self.working.designer,key)
+            result[key] = self.working.getsetters[key].get(self.working.designer,self.working.initial_inst)
         return result
     
     def _combined_param(self, state):
@@ -46,20 +72,26 @@ class Tune(config.Action_with_working_dir):
             result[key] = value
         return result
     
+    def _get_designer_inst(self, param):
+        designer = self.working.designer
+        for name in param:
+            designer = self.working.getsetters[name].set_designer(designer, param[name])
+        inst = designer.unpack(self.working.designer.state_vec)
+        for name in param:
+            inst = self.working.getsetters[name].set_inst(inst, param[name])
+        return designer, inst
+    
     def _errors(self, param={}):
-        mod = self.working.designer(**param)
-        
-        instrument = mod.patch_instrument(
-            mod.unpack(self.working.designer.state_vec)
-            )
-        instrument.prepare_phase()
+        designer, inst = self._get_designer_inst(param)
+        inst = designer.patch_instrument(inst)
+        inst.prepare_phase()
         
         errors = [ ]
         
         s = 1200.0/math.log(2)
         for item in self.working.observations:
-            w_obtained = mod.speed_of_sound / item.fqc
-            w_expected = instrument.true_wavelength_near(w_obtained, item.fingers)
+            w_obtained = designer.speed_of_sound / item.fqc
+            w_expected = inst.true_wavelength_near(w_obtained, item.fingers)
             errors.append( (math.log(w_obtained)-math.log(w_expected))*s )
         
         return errors
@@ -86,10 +118,22 @@ class Tune(config.Action_with_working_dir):
     def run(self):
         self.working = Working()
         self.working.designer = design.load(self.working_dir)
+        self.working.initial_inst = self.working.designer.unpack(self.working.designer.state_vec)
+        self.working.getsetters = { }
         self.working.observations = [ ]
         self.working.opt_param = [ ]
         self.working.fixed_param = { }
         
+        # Get getsetters
+        for item in self.working.designer.parameters:
+            if isinstance(item, config.Float_flag):
+                self.working.getsetters[item.shell_name().lstrip("-")] = Flag_getsetter(item.name)
+        for i in range(self.working.designer.n_holes):
+            self.working.getsetters["diam"+str(i)] = Array_getsetter("hole_diameters",i)
+            self.working.getsetters["len"+str(i)] = Array_getsetter("hole_lengths",i)
+            self.working.getsetters["pos"+str(i)] = Array_getsetter("inner_hole_positions",i)
+        
+        # Parse observations
         for item in self.observations:
             parts = item.split(',')
             assert len(parts) == (self.working.designer.n_holes+1)
@@ -100,6 +144,7 @@ class Tune(config.Action_with_working_dir):
             obs.desc = item
             self.working.observations.append(obs)
         
+        # Provide a default set of "observations" if absent
         if not self.observations:
             for item in self.working.designer.fingerings:
                 obs = Observation()
@@ -108,6 +153,7 @@ class Tune(config.Action_with_working_dir):
                 obs.desc = design.describe_fqc(obs.fqc) + "," + str(int(obs.fqc+0.5)) + "," + ",".join(str(item2) for item2 in obs.fingers)
                 self.working.observations.append(obs)
         
+        # Parse parameters
         for item in self.param.split(','):
             if not item: 
                 continue
@@ -119,20 +165,15 @@ class Tune(config.Action_with_working_dir):
             
             # Can use underscores or dashes
             item = item.replace("_","-").lstrip("-")
+            assert item in self.working.getsetters, "Unknown parameter: "+item
             
-            for item2 in self.working.designer.parameters:
-                if item == item2.shell_name().lstrip("-"):
-                    if is_fixed:
-                        #self.working.designer = self.working.designer(**{item2.name:value})
-                        self.working.fixed_param[item2.name] = value
-                    else:
-                        self.working.opt_param.append(item2.name)
-                    break
+            if is_fixed:
+                self.working.fixed_param[item] = value
             else:
-                assert False, 'Unknown parameter: %s' % item
+                self.working.opt_param.append(item)
         
         initial = [ 
-            getattr(self.working.designer,item)
+            self.working.getsetters[item].get(self.working.designer,self.working.initial_inst)
             for item in self.working.opt_param
             ]
         
